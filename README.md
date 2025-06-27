@@ -103,7 +103,7 @@ flight-booking-system/
 ## 📋 关键文件说明
 
 ### 🚀 核心启动文件
-- **FlightBookingMain.java** - 系统启动入口，包含炫酷的启动Banner
+- **FlightBookingMain.java** - 系统启动入口
 
 ### 🌐 HTTP服务层
 - **FlightHttpServer.java** - 基于Java内置HttpServer的Web服务器
@@ -170,4 +170,4 @@ curl http://localhost:8080/api/airports
 
 **这就是完整的手搓航空订票系统架构！** 🎉
 
-没有Spring的繁琐配置，没有框架的黑魔法，就是简单直接的Java Web开发！
+
