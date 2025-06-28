@@ -1,3 +1,4 @@
+USE airdatabase;
 CREATE TABLE `user`
 (
     user_ID CHAR(6)  CHECK (user_ID REGEXP '^[0-9]{6}$') PRIMARY KEY NOT NULL,
