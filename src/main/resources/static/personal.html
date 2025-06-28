@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<!-- basic -->
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- mobile metas -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+<!-- site metas -->
+<title>航空票务系统</title>
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta name="author" content="">	
+<!-- bootstrap css -->
+<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+<!-- style css -->
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<!-- Responsive-->
+<link rel="stylesheet" href="css/responsive.css">
+<!-- fevicon -->
+<link rel="icon" href="../../src/main/resources/static/images/fevicon.png" type="image/gif" />
+<!-- Scrollbar Custom CSS -->
+<link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
+<!-- Tweaks for older IEs-->
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+<!-- owl stylesheets --> 
+<link rel="stylesheet" href="css/owl.carousel.min.css">
+<link rel="stylesheet" href="../../src/main/resources/static/css/owl.theme.default.min.css">
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+<style>
+    /* 仅修改个人信息部分的样式 */
+    .user-info-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-top: 30px;
+        margin-bottom: 50px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .header_section {
+        margin-top:0px;
+        padding-top:0px;
+        text-align: center;
+    }
+
+    .user-info-container .title {
+        color: #1a73e8;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 10px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+    
+    .user-info-container .title:first-child {
+        margin-top: 0;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .label {
+        font-weight: 600;
+        color: #555;
+        min-width: 120px;
+    }
+    
+    .data {
+        color: #333;
+        flex-grow: 1;
+        padding-left: 20px;
+    }
+    
+    .editable {
+        position: relative;
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    
+    .editable:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .actions {
+        margin-top: 30px;
+        text-align: center;
+    }
+    
+    .btn-save, .btn-cancel .exit_log_in_btn{
+        padding: 10px 25px;
+        border-radius: 4px;
+        margin: 0 10px;
+        font-weight: 500;
+    }
+    
+    .btn-save {
+        background-color: #1a73e8;
+        color: white;
+        border: none;
+    }
+    
+    .btn-cancel {
+        background-color: #f5f5f5;
+        color: #555;
+        border: 1px solid #ddd;
+    }
+
+    .exit_log_in_btn {
+        background-color: #fe0202;
+        color: rgba(103, 97, 97, 0.685);
+        border: 1px solid #ddd;
+    }
+</style>
+</head>
+<body>
+	<!-- header section start - 完全保留原始导航栏 -->
+	<div class="header_section">
+		<div class="container">
+			<nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="logo"><a href="index.html"><img src="images/logo.png"></a></div>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <a class="nav-item nav-link" href="main.html">主页</a>
+              <a class="nav-item nav-link" href="search.html">航班查询</a>
+              <a class="nav-item nav-link" href="booking.html">订单管理</a>
+              <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
+              <a class="nav-item nav-link" href="admin.html">管理员操作</a>
+          </div>
+      </nav>
+		</div>  
+  </div>
+	<!-- header section end -->
+	
+  <!-- user info section start - 改进后的个人信息部分 -->
+  <div class="user-info-container container">
+      <h2 class="title">基本信息</h2>
+      <div class="info-item">
+          <span class="label">* 用户名:</span>
+          <span class="data editable" id="username">admin</span>
+      </div>
+      <div class="info-item">
+          <span class="label">* 姓名:</span>
+          <span class="data editable" id="name">徐万里</span>
+      </div>
+      <div class="info-item">
+          <span class="label">* 国家/地区:</span>
+          <span class="data editable" id="country">中国</span>
+      </div>
+      <div class="info-item">
+          <span class="label">* 证件类型:</span>
+          <span class="data editable" id="id-type">身份证</span>
+      </div>
+      <div class="info-item">
+          <span class="label">* 证件号码:</span>
+          <span class="data editable" id="id-number">1101********3598</span>
+      </div>
+      <div class="info-item">
+          <span class="label">核验状态:</span>
+          <span class="data" id="verify-status">通过</span>
+      </div>
+
+      <h2 class="title">联系方式</h2>
+      <div class="info-item">
+          <span class="label">* 手机号:</span>
+          <span class="data editable" id="phone-number">156****6692</span>
+      </div>
+      <div class="info-item">
+          <span class="label">邮箱:</span>
+          <span class="data editable" id="email">machen@apache.org</span>
+      </div>
+      <div class="info-item">
+          <span class="label">地址:</span>
+          <span class="data editable" id="address">北京市海淀区</span>
+      </div>
+      <div class="info-item">
+          <span class="label">邮编:</span>
+          <span class="data editable" id="zipcode">100080</span>
+      </div>
+
+      <h2 class="title">附加信息</h2>
+      <div class="info-item">
+          <span class="label">* 优惠(待)类:</span>
+          <span class="data editable" id="discount">成人</span>
+      </div>
+      
+      <div class="actions">
+          <button class="btn btn-save">保存更改</button>
+          <button class="btn btn-cancel">取消</button>
+          <button class="exit_log_in_btn" onclick="exit_login()" id = "exit_log_in">退出登录</button>
+      </div>
+  </div>
+  <!-- user info section end -->
+
+	<!-- footer section start -->
+	<div class="layout_padding footer_section">
+		<div class="container">
+		  <div class="row">
+			<div class="col-sm-6 col-md-6 col-lg-3">
+			  <div class="footer_logo"><img src="images/footer-logo.png"></div>
+			  <!-- 下标注释，即网页下部的内容注释 -->
+			  <p class="dolor_text">华航航空航班票务系统 <br>Copyright © 2025 All rights reserved.</p>
+			</div>
+			<div class="col-sm-6 col-md-6 col-lg-3">
+			  <h1 class="quick_text">更多功能</h1>
+			  <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">加入我们</span></div>
+			  <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">维护者</span></div>
+			  <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">版本状态</span></div>
+			</div>
+			<div class="col-sm-6 col-md-6 col-lg-3">
+			  <h1 class="quick_text">联系我们</h1>
+			  <div class="map_flag"><img src="images/map-flag.png"><span class="padding-left">123 Main Street, Anytown USA</span></div>
+			  <div class="map_flag"><img src="images/email-icon.png"><span class="padding-left">abcd@gmail.com</span></div>
+			  <div class="map_flag"><img src="images/phone-icon.png"><span class="padding-left">+123 456 7890</span></div>
+			</div>
+		  </div>
+		</div>
+	  </div>
+	<!-- footer section end -->
+	<!-- copyright section end -->
+    <!-- Javascript files-->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery-3.0.0.min.js"></script>
+    <script src="js/plugin.js"></script>
+    <!-- sidebar -->
+    <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="js/custom.js"></script>
+    <!-- javascript --> 
+    <script src="../../src/main/resources/static/js/owl.carousel.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+    <script>
+        // 仅保留个人信息部分的交互功能
+        $(document).ready(function() {
+            // 保存按钮点击事件
+            $('.btn-save').click(function() {
+                alert('个人信息已保存！');
+            });
+            
+            // 取消按钮点击事件
+            $('.btn-cancel').click(function() {
+                if(confirm('确定要放弃所有更改吗？')) {
+                    location.reload();
+                }
+            });
+        });
+    </script>
+    <script>
+        document.getElementById("exit_log_in").addEventListener("click", function() {
+          if(confirm("确定退出登录吗？")) {
+             localStorage.removeItem("username");
+            localStorage.removeItem("password");
+            window.location.href = "sign_log.html";
+          }
+        });
+    </script>    
+</body>
+</html>
