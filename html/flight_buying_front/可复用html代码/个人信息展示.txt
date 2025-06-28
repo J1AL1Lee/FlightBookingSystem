@@ -1,0 +1,53 @@
+<!-- user info section start -->
+    <div class="user-info-container container">
+        <h2 class="title">基本信息</h2>
+        <div class="info-item">
+            <span class="label">* 用户名:</span>
+            <span class="data editable" id="username">admin</span>
+        </div>
+        <div class="info-item">
+            <span class="label">* 姓名:</span>
+            <span class="data editable" id="name">徐万里</span>
+        </div>
+        <div class="info-item">
+            <span class="label">* 国家/地区:</span>
+            <span class="data editable" id="country">中国</span>
+        </div>
+        <div class="info-item">
+            <span class="label">* 证件类型:</span>
+            <span class="data editable" id="id-type">身份证</span>
+        </div>
+        <div class="info-item">
+            <span class="label">* 证件号码:</span>
+            <span class="data editable" id="id-number">1101********3598</span>
+        </div>
+        <div class="info-item">
+            <span class="label">核验状态:</span>
+            <span class="data editable" id="verify-status">通过</span>
+        </div>
+
+        <h2 class="title">联系方式</h2>
+        <div class="info-item">
+            <span class="label">* 手机号:</span>
+            <span class="data editable" id="phone-number">156****6692</span>
+        </div>
+        <div class="info-item">
+            <span class="label">邮箱:</span>
+            <span class="data editable" id="email">machen@apache.org</span>
+        </div>
+        <div class="info-item">
+            <span class="label">地址:</span>
+            <span class="data editable" id="address"></span>
+        </div>
+        <div class="info-item">
+            <span class="label">邮编:</span>
+            <span class="data editable" id="zipcode"></span>
+        </div>
+
+        <h2 class="title">附加信息</h2>
+        <div class="info-item">
+            <span class="label">* 优惠(待)类:</span>
+            <span class="data editable" id="discount">成人</span>
+        </div>
+    </div>
+  <!-- user info section end -->

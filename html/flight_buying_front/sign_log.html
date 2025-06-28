@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>华航航空票务系统</title>
+    <!-- CSS 链接 -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <style>
+        /* 页面背景样式 */
+        body {
+            background-image: url('images/background.jpg'); /* 替换为你的背景图片路径 */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* 登录和注册容器样式 */
+        .content-container {
+            margin-top: 100px; /* 调整上下间距 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80vh; /* 设置容器高度 */
+        }
+
+        .left-section {
+            flex: 2; /* 左侧占 2 部分 */
+            text-align: center;
+        }
+
+        .right-section {
+            flex: 1; /* 右侧占 1 部分 */
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* 留一些透明度 */
+            border-radius: 10px;
+        }
+
+        /* 输入框样式 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-switch {
+            text-decoration: underline; /* 下划线 */
+            color: #007bff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面主要内容 -->
+    <div class="container">
+        <div class="content-container">
+        <div class="left-section">
+            <h1>华航航空票务系统</h1>
+        </div>
+        <div class="right-section">
+            <!-- 登录表单 -->
+            <div id="login-form" style="display: block;">
+                <h3>登录</h3>
+                <form id="login">
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" class="form-control" placeholder="请输入用户名">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" class="form-control" placeholder="请输入密码">
+                    </div>
+                    <button type="button" id="btn-login" class="btn-login">登录</button>
+                    <p class="login-help" style="text-align: center; margin-top: 10px;">
+                        <a href="#" id="register-link" class="btn-switch">没有账号？现在注册</a>
+                    </p>
+                </form>
+            </div>
+
+            <!-- 注册表单 -->
+            <div id="register-form" style="display: none;">
+                <h3>注册</h3>
+                <form id="register">
+                    <div class="form-group">
+                        <label for="register-username">用户名</label>
+                        <input type="text" id="register-username" class="form-control" placeholder="请输入用户名">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">密码</label>
+                        <input type="password" id="register-password" class="form-control" placeholder="请输入密码">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-gender">性别</label>
+                        <select id="register-gender" class="form-control">
+                            <option value="male">男</option>
+                            <option value="female">女</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-phone">手机号</label>
+                        <input type="text" id="register-phone" class="form-control" placeholder="请输入手机号">
+                    </div>
+                    <button type="button" id="btn-register" class="btn-login">注册</button>
+                    <p class="login-help" style="text-align: center; margin-top: 10px;">
+                        <a href="#" id="login-link" class="btn-switch">返回登录</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- footer section start -->
+    <!-- ... footer content ... -->
+    <!-- footer section end -->
+
+    <!-- JavaScript 文件 -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // 切换到注册界面
+            $('#register-link').click(function (e) {
+                e.preventDefault();
+                $('#login-form').hide();
+                $('#register-form').show();
+            });
+
+            // 切换回登录界面
+            $('#login-link').click(function (e) {
+                e.preventDefault();
+                $('#register-form').hide();
+                $('#login-form').show();
+            });
+
+            // 模拟登录
+            $('#btn-login').click(function () {
+                alert('模拟登录成功，跳转到 main 页');
+                window.location.href = 'main.html';
+                // add redirect logic here
+            });
+
+            // 模拟注册
+            $('#btn-register').click(function () {
+                alert('模拟注册成功，返回登录');
+                $('#register-form').hide();
+                $('#login-form').show();
+            });
+        });
+    </script>
+</body>
+</html>
