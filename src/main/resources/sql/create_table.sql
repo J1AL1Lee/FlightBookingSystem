@@ -5,8 +5,8 @@ CREATE TABLE `user`
     user_name VARCHAR(50) NOT NULL,
     user_gender VARCHAR(10) CHECK (user_gender IN ('男', '女')),
     user_telephone CHAR(8) CHECK (user_telephone REGEXP '^[0-9]{8}$'),
-    user_logintime DATETIME NOT NULL CHECK (
-        user_logintime BETWEEN '2000-10-28 00:00:00' AND '9999-12-31 23:59:59'
+    user_SignUpTime DATETIME NOT NULL CHECK (
+        user_SignUpTime BETWEEN '2000-10-28 00:00:00' AND '9999-12-31 23:59:59'
         ),
     VIPstate VARCHAR(10) NOT NULL CHECK (VIPstate IN ('是', '否'))  DEFAULT '否',
     user_authority SMALLINT NOT NULL DEFAULT 1
@@ -26,8 +26,8 @@ CREATE TABLE `flight`
     airlinecompany_ID CHAR(5) NOT NULL,
     airport_from VARCHAR(50) NOT NULL,
     airport_to VARCHAR(50) NOT NULL,
-    time_start TIME CHECK (time_start BETWEEN '00:00:00' AND '23:59:59') NOT NULL,
-    time_reach TIME CHECK (time_reach BETWEEN '00:00:00' AND '23:59:59') NOT NULL,
+    time_takeoff TIME CHECK (time_takeoff BETWEEN '00:00:00' AND '23:59:59') NOT NULL,
+    time_arrive TIME CHECK (time_arrive BETWEEN '00:00:00' AND '23:59:59') NOT NULL,
     seat0_capacity SMALLINT NOT NULL,
     seat1_capacity SMALLINT NOT NULL,
     seat0_price SMALLINT NOT NULL,
