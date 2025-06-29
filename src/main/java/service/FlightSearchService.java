@@ -291,46 +291,7 @@ public class FlightSearchService {
      * @param userId 用户ID
      * @return 预订结果信息
      */
-    public BookingResult bookSeats(String flightrecordId, int seatType, int seatCount, String userId) {
-        System.out.println("🎫 预订座位: " + flightrecordId + " " + seatCount + "个" +
-                (seatType == 0 ? "经济舱" : "商务舱") + " 用户:" + userId);
 
-        // 1. 获取航程记录
-        Flightrecord record = flightrecordDao.findById(flightrecordId);
-        if (record == null) {
-            return new BookingResult(false, "航程记录不存在", 0, 0);
-        }
-
-        // 2. 获取航班信息
-        Flight flight = flightDao.findById(record.getFlightId());
-        if (flight == null) {
-            return new BookingResult(false, "航班信息不存在", 0, 0);
-        }
-
-        // 3. 判断用户VIP状态
-        boolean isVipUser = checkVipStatus(userId);
-
-        // 4. 计算价格
-        int unitPrice;
-        if (seatType == 0) {
-            unitPrice = isVipUser ? Math.round(flight.getSeat0Price() * flight.getDiscount()) : flight.getSeat0Price();
-        } else {
-            unitPrice = isVipUser ? Math.round(flight.getSeat1Price() * flight.getDiscount()) : flight.getSeat1Price();
-        }
-        int totalPrice = unitPrice * seatCount;
-
-        // 5. 预订座位
-        boolean success = flightrecordDao.bookSeats(flightrecordId, seatType, seatCount);
-
-        if (success) {
-            String message = String.format("预订成功! %s %d个%s座位，单价%d元，总价%d元%s",
-                    flight.getFlightId(), seatCount, (seatType == 0 ? "经济舱" : "商务舱"),
-                    unitPrice, totalPrice, (isVipUser ? " (VIP折扣价)" : ""));
-            return new BookingResult(true, message, unitPrice, totalPrice);
-        } else {
-            return new BookingResult(false, "座位预订失败，可能座位不足", unitPrice, totalPrice);
-        }
-    }
 
     /**
      * 检查用户VIP状态
@@ -359,31 +320,6 @@ public class FlightSearchService {
     /**
      * 预订结果类
      */
-    public static class BookingResult {
-        private boolean success;
-        private String message;
-        private int unitPrice;
-        private int totalPrice;
-
-        public BookingResult(boolean success, String message, int unitPrice, int totalPrice) {
-            this.success = success;
-            this.message = message;
-            this.unitPrice = unitPrice;
-            this.totalPrice = totalPrice;
-        }
-
-        // Getters
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public int getUnitPrice() { return unitPrice; }
-        public int getTotalPrice() { return totalPrice; }
-
-        @Override
-        public String toString() {
-            return String.format("BookingResult{success=%s, message='%s', unitPrice=%d, totalPrice=%d}",
-                    success, message, unitPrice, totalPrice);
-        }
-    }
 
     /**
      * 取消预订
