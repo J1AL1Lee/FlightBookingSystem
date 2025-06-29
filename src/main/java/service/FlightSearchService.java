@@ -25,6 +25,26 @@ public class FlightSearchService {
     private UserDao userDao = new UserDao();
 
     /**
+     * 根据航班ID获取航班信息
+     * @param flightId 航班ID
+     * @return 航班信息，未找到返回null
+     */
+    public Flight getFlightById(String flightId) {
+        try {
+            Flight flight = flightDao.findById(flightId);
+            if (flight != null) {
+                System.out.println("✅ 找到航班: " + flightId);
+            } else {
+                System.err.println("❌ 未找到航班: " + flightId);
+            }
+            return flight;
+        } catch (Exception e) {
+            System.err.println("❌ 查询航班失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * 航班搜索结果DTO - 根据用户VIP状态显示不同价格
      */
     public static class FlightSearchResult {

@@ -431,6 +431,30 @@ public class FlightrecordDao {
     }
 
     /**
+     * 根据航班ID和日期获取航程记录ID
+     * @param flightId 航班ID
+     * @param flightDate 航班日期
+     * @return 航程记录ID，未找到返回null
+     */
+    public String getFlightRecordId(String flightId, LocalDate flightDate) {
+        String sql = "SELECT flightrecord_ID FROM flightrecord WHERE flight_ID = ? AND flight_date = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, flightId);
+            stmt.setDate(2, java.sql.Date.valueOf(flightDate));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("flightrecord_ID");
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            System.err.println("❌ 查询航程记录ID失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * 批量创建航程记录
      * @param flightrecords 航程记录列表
      * @return 成功保存的数量

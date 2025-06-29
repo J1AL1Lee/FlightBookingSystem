@@ -233,7 +233,7 @@ public class BookingService {
     private Order createOrderObject(String orderId, String flightrecordId, String userId, Integer seatType) {
         try {
             // 获取航班记录获取flightId和日期
-            FlightRecord record = FlightrecordDao.findById(flightrecordId);
+            Flightrecord record = FlightrecordDao.findById(flightrecordId);
             if (record == null) {
                 System.err.println("❌ 无法获取航班记录");
                 return null;
@@ -263,7 +263,7 @@ public class BookingService {
      */
     public boolean lockSeat(String flightrecordId, Integer seatType) {
         try {
-            boolean success = FlightrecordDao.bookSeats(flightrecordId, seatType);
+            boolean success = FlightrecordDao.bookSeats(flightrecordId, seatType,1);
             if (success) {
                 System.out.println("🔒 座位锁定成功: " + flightrecordId + " " + (seatType == 0 ? "经济舱" : "商务舱"));
             } else {
@@ -281,7 +281,7 @@ public class BookingService {
      */
     public boolean releaseSeat(String flightrecordId, Integer seatType) {
         try {
-            boolean success = FlightrecordDao.cancelSeats(flightrecordId, seatType);
+            boolean success = FlightrecordDao.cancelSeats(flightrecordId, seatType,1);
             if (success) {
                 System.out.println("🔓 座位释放成功: " + flightrecordId + " " + (seatType == 0 ? "经济舱" : "商务舱"));
             }
