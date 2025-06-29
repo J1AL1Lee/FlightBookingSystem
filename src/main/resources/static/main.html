@@ -20,15 +20,80 @@
 <!-- Responsive-->
 <link rel="stylesheet" href="css/responsive.css">
 <!-- fevicon -->
-<link rel="icon" href="../../src/main/resources/static/images/fevicon.png" type="image/gif" />
+<link rel="icon" href="images/fevicon.png" type="image/gif" />
 <!-- Scrollbar Custom CSS -->
 <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
 <!-- Tweaks for older IEs-->
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
 <!-- owl stylesheets --> 
 <link rel="stylesheet" href="css/owl.carousel.min.css">
-<link rel="stylesheet" href="../../src/main/resources/static/css/owl.theme.default.min.css">
+<link rel="stylesheet" href="css/owl.theme.default.min.css">
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+
+<style>
+    /* 用户状态显示样式 */
+    .user-info {
+        display: flex;
+        align-items: center;
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .logout-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        margin-left: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .logout-btn:hover {
+        background-color: #c82333;
+    }
+    
+    .main_login_bt {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .main_login_bt:hover {
+        background-color: #0056b3;
+        color: white;
+        text-decoration: none;
+    }
+
+    .background-image {
+            background-image: url('你的背景图片地址.jpg'); /* 替换为你的背景图片地址 */
+            background-size: cover; /* 使背景图片覆盖整个容器 */
+            padding: 20px; /* 添加内边距以便文本框不紧贴边缘 */
+            color: white; /* 设置默认文本颜色为白色 */
+    }
+
+    .label {
+        background-color: #e0e0e0; /* 设置浅灰色背景色 */
+        color: black; /* 设置文本颜色为黑色 */
+        padding: 20px; /* 设置内边距 */
+        border: 2px solid #333; /* 设置边框颜色和宽度 */
+        border-radius: 5px; /* 设置圆角 */
+        margin-top: 20px; /* 设置上边距 */
+    }
+
+    .about_text {
+        color: black; /* 确保文本颜色为黑色 */
+        font-size: 16px; /* 设置字体大小 */
+        line-height: 1.5; /* 设置行高 */
+        text-align: justify; /* 设置文本居中 */
+    }
+</style>
 </head>
 <body>
 	<!-- header section start -->
@@ -39,12 +104,25 @@
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <div class="collapse navbar-collapse" id="navbarSupportedContent" style="text-align: center;">
                    <a class="nav-item nav-link" href="main.html">主页</a>
 				   <a class="nav-item nav-link" href="search.html">航班查询</a>
                    <a class="nav-item nav-link" href="booking.html">订单管理</a>
                    <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
                    <a class="nav-item nav-link" href="admin.html">管理员操作</a>
+                </div>
+                
+                <!-- 登录状态显示区域 -->
+                <div id="auth-section">
+                    <!-- 未登录时显示登录按钮 -->
+                    <a href="sign_log.html" class="main_login_bt" id="login-btn" style="display: none;">登录</a>
+                    
+                    <!-- 已登录时显示用户信息和退出按钮 -->
+                    <div class="user-info" id="user-info" style="display: none;">
+                        <span id="welcome-text" style = "color:white; font-size: 16px;">欢迎, </span>
+                        <span id="username-display" style = "color:white; font-size: 16px;"></span>
+                        <button class="logout-btn" id="logout-btn">退出登录</button>
+                    </div>
                 </div>
             </nav>
 		</div>
@@ -101,7 +179,9 @@
     		<div class="row">
     			<div class="col-sm-12">
     				<h1 class="about_taital">关于我们的航空订票系统</h1>
-    				<p class="lorem_text">华航航空航班票务系统是一款基于Web的航空订票系统，主要服务于航空公司和机场的客户，通过系统提供的航班查询、订单管理、个人信息管理、管理员操作等功能，可以帮助客户快速、准确地查询航班信息、订购机票、管理订单、查询个人信息，提高客户的服务效率。</p>
+                    <div class = "label">
+                        <p class="about_text">华航航空航班票务系统是一款基于Web的航空订票系统，主要服务于航空公司和机场的客户，通过系统提供的航班查询、订单管理、个人信息管理、管理员操作等功能，可以帮助客户快速、准确地查询航班信息、订购机票、管理订单、查询个人信息，提高客户的服务效率。</p>
+                    </div>
     			</div>
     		</div>
     	</div>
@@ -115,13 +195,7 @@
 			<div class="col-sm-6 col-md-6 col-lg-3">
 			  <div class="footer_logo"><img src="images/footer-logo.png"></div>
 			  <!-- 下标注释，即网页下部的内容注释 -->
-			  <p class="dolor_text">华航航空航班票务系统 <br>Copyright © 2025 All rights reserved.</p>
-			</div>
-			<div class="col-sm-6 col-md-6 col-lg-3">
-			  <h1 class="quick_text">更多功能</h1>
-			  <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">加入我们</span></div>
-			  <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">维护者</span></div>
-			  <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">版本状态</span></div>
+			  <p class="dolor_text">华航航空航班票务系统</p>
 			</div>
 			<div class="col-sm-6 col-md-6 col-lg-3">
 			  <h1 class="quick_text">联系我们</h1>
@@ -144,7 +218,52 @@
     <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
     <script src="js/custom.js"></script>
     <!-- javascript --> 
-    <script src="../../src/main/resources/static/js/owl.carousel.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>    
+    <script src="js/owl.carousel.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // 检查登录状态并更新UI
+            function updateLoginStatus() {
+                var isLoggedIn = localStorage.getItem('isLoggedIn');
+                var username = localStorage.getItem('username');
+
+                if (isLoggedIn === "true" && username) {
+                    // 用户已登录 - 显示欢迎信息和退出按钮
+                    $('#login-btn').hide();
+                    $('#user-info').show();
+                    $('#username-display').text(username);
+                } else {
+                    // 用户未登录 - 显示登录按钮
+                    $('#login-btn').show();
+                    $('#user-info').hide();
+                }
+            }
+
+            // 页面加载时检查登录状态
+            updateLoginStatus();
+
+            // 退出登录功能
+            $('#logout-btn').click(function() {
+                if (confirm('确定要退出登录吗？')) {
+                    // 清除登录状态
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('username');
+                    
+                    // 更新UI
+                    updateLoginStatus();
+                    
+                    alert('已成功退出登录');
+                }
+            });
+
+            // 监听存储变化（如果在其他标签页登录/退出）
+            $(window).on('storage', function(e) {
+                if (e.originalEvent.key === 'isLoggedIn' || e.originalEvent.key === 'username') {
+                    updateLoginStatus();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
