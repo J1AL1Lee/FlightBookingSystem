@@ -254,6 +254,9 @@ public class FlightrecordDao {
         return updateSeatCount(flightrecordId, seatType, seatCount);
     }
 
+
+
+
     /**
      * 更新航程记录
      * @param flightrecord 航程对象
