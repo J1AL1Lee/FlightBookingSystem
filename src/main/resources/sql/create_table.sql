@@ -5,7 +5,7 @@ CREATE TABLE `user`
     user_password VARCHAR(50) NOT NULL,
     user_name VARCHAR(50) NOT NULL,
     user_gender VARCHAR(10) CHECK (user_gender IN ('男', '女')),
-    user_telephone CHAR(8) CHECK (user_telephone REGEXP '^[0-9]{8}$'),
+    user_telephone CHAR(8) CHECK (user_telephone REGEXP '^[0-9]{8}$') NOT NULL ,
     user_SignUpTime DATETIME NOT NULL CHECK (
         user_SignUpTime BETWEEN '2000-10-28 00:00:00' AND '9999-12-31 23:59:59'
         ),

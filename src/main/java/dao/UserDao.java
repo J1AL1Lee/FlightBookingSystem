@@ -42,6 +42,42 @@ public class UserDao {
         }
     }
 
+    // 在现有的UserDao类中添加这个方法
+
+    /**
+     * 根据用户ID查找用户（用于VIP状态判断）
+     * @param userId 用户ID
+     * @return 用户对象，如果不存在返回null
+     */
+    public User findByUserId(String userId) {
+        String sql = "SELECT * FROM user WHERE user_ID = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getString("user_ID"));
+                user.setUserPassword(rs.getString("user_password"));
+                user.setUserName(rs.getString("user_name"));
+                user.setUserGender(rs.getString("user_gender"));
+                user.setUserTelephone(rs.getString("user_telephone"));
+                user.setUserSignUpTime(rs.getTimestamp("user_SignUpTime").toLocalDateTime());
+                user.setVipState(rs.getString("VIPstate"));
+                user.setUserAuthority(rs.getInt("user_authority"));
+                return user;
+            }
+            return null;
+
+        } catch (SQLException e) {
+            System.err.println("❌ 根据用户ID查询用户失败: " + e.getMessage());
+            throw new RuntimeException("根据用户ID查询用户失败: " + e.getMessage());
+        }
+    }
+
     // 根据身份证号查找用户
     public User findById(String userId) {
         String sql = "SELECT * FROM user WHERE user_ID = ?";

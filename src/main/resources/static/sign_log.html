@@ -76,16 +76,19 @@
         </div>
         <div class="right-section">
             <!-- 登录表单 -->
+            <!-- 登录表单 -->
             <div id="login-form" style="display: block;">
                 <h3>登录</h3>
                 <form id="login">
                     <div class="form-group">
-                        <label for="username">用户名</label>
-                        <input type="text" id="username" class="form-control" placeholder="请输入用户名">
+                        <label for="username">用户ID</label>
+                        <input type="text" id="username" class="form-control"
+                               placeholder="请输入6位数字用户ID" maxlength="6">
                     </div>
                     <div class="form-group">
                         <label for="password">密码</label>
-                        <input type="password" id="password" class="form-control" placeholder="请输入密码">
+                        <input type="password" id="password" class="form-control"
+                               placeholder="请输入密码">
                     </div>
                     <button type="button" id="btn-login" class="btn-login">登录</button>
                     <p class="login-help" style="text-align: center; margin-top: 10px;">
@@ -95,16 +98,19 @@
             </div>
 
             <!-- 注册表单 -->
+            <!-- 注册表单 -->
             <div id="register-form" style="display: none;">
                 <h3>注册</h3>
                 <form id="register">
                     <div class="form-group">
-                        <label for="register-username">用户名</label>
-                        <input type="text" id="register-username" class="form-control" placeholder="请输入用户名">
+                        <label for="register-username">用户ID (6位数字)</label>
+                        <input type="text" id="register-username" class="form-control"
+                               placeholder="请输入6位数字用户ID" maxlength="6">
                     </div>
                     <div class="form-group">
                         <label for="register-password">密码</label>
-                        <input type="password" id="register-password" class="form-control" placeholder="请输入密码">
+                        <input type="password" id="register-password" class="form-control"
+                               placeholder="请输入密码(至少6位)" minlength="6">
                     </div>
                     <div class="form-group">
                         <label for="register-gender">性别</label>
@@ -114,8 +120,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="register-phone">手机号</label>
-                        <input type="text" id="register-phone" class="form-control" placeholder="请输入手机号">
+                        <label for="register-phone">手机号 (8位数字，可选)</label>
+                        <input type="text" id="register-phone" class="form-control"
+                               placeholder="请输入8位数字手机号" maxlength="8">
                     </div>
                     <button type="button" id="btn-register" class="btn-login">注册</button>
                     <p class="login-help" style="text-align: center; margin-top: 10px;">
@@ -134,6 +141,7 @@
     <script src="js/jquery.min.js"></script>
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
+
     <script>
         $(document).ready(function () {
             // 切换到注册界面
@@ -150,20 +158,124 @@
                 $('#login-form').show();
             });
 
-            // 模拟登录
+            // 实际登录功能
             $('#btn-login').click(function () {
-                alert('模拟登录成功，跳转到 main 页');
-                window.location.href = 'main.html';
-                // add redirect logic here
+                const userId = $('#username').val().trim();
+                const userPassword = $('#password').val().trim();
+
+                // 验证输入
+                if (!userId) {
+                    alert('请输入用户ID');
+                    return;
+                }
+                if (!userPassword) {
+                    alert('请输入密码');
+                    return;
+                }
+
+                // 发送登录请求
+                $.ajax({
+                    url: 'http://localhost:8080/api/login',
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        userId: userId,
+                        userPassword: userPassword
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            alert('登录成功！欢迎 ' + response.userName);
+                            // 可以将用户信息存储到sessionStorage
+                            sessionStorage.setItem('currentUser', JSON.stringify(response));
+                            // 跳转到主页
+                            window.location.href = 'main.html';
+                        } else {
+                            alert('登录失败：' + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = '登录失败';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch (e) {
+                            errorMsg = '网络错误或服务器无响应';
+                        }
+                        alert(errorMsg);
+                    }
+                });
             });
 
-            // 模拟注册
+            // 实际注册功能
             $('#btn-register').click(function () {
-                alert('模拟注册成功，返回登录');
-                $('#register-form').hide();
-                $('#login-form').show();
+                const userId = $('#register-username').val().trim();
+                const userPassword = $('#register-password').val().trim();
+                const userGender = $('#register-gender').val();
+                const userTelephone = $('#register-phone').val().trim();
+
+                // 验证输入
+                if (!userId) {
+                    alert('请输入用户ID');
+                    return;
+                }
+                if (!/^[0-9]{6}$/.test(userId)) {
+                    alert('用户ID必须是6位数字');
+                    return;
+                }
+                if (!userPassword) {
+                    alert('请输入密码');
+                    return;
+                }
+                if (userPassword.length < 6) {
+                    alert('密码长度不能少于6位');
+                    return;
+                }
+                if (userTelephone && !/^[0-9]{8}$/.test(userTelephone)) {
+                    alert('手机号必须是8位数字');
+                    return;
+                }
+
+                // 发送注册请求
+                $.ajax({
+                    url: 'http://localhost:8080/api/register',
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        userId: userId,
+                        userName: userId, // 暂时用userId作为userName，你也可以添加真实姓名输入框
+                        userPassword: userPassword,
+                        userGender: userGender === 'male' ? '男' : '女',
+                        userTelephone: userTelephone
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            alert('注册成功！用户ID：' + response.userId);
+                            // 自动切换回登录界面
+                            $('#register-form').hide();
+                            $('#login-form').show();
+                            // 清空注册表单
+                            $('#register-username').val('');
+                            $('#register-password').val('');
+                            $('#register-phone').val('');
+                        } else {
+                            alert('注册失败：' + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = '注册失败';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMsg = response.message || errorMsg;
+                        } catch (e) {
+                            errorMsg = '网络错误或服务器无响应';
+                        }
+                        alert(errorMsg);
+                    }
+                });
             });
         });
     </script>
+
+
 </body>
 </html>
