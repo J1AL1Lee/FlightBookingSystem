@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>支付页面</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="icon" href="images/fevicon.png" type="image/gif" />
+    <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+    <style>
+        .payment-methods {
+            margin-top: 50px;
+        }
+        .payment-method {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .payment-method img {
+            max-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <!-- header section start -->
+    <div class="header_section">
+        <div class="container-fluid">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="logo"><a href="index.html"><img src="images/logo.png"></a></div>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <a class="nav-item nav-link" href="main.html">主页</a>
+                    <a class="nav-item nav-link" href="search.html">航班查询</a>
+                    <a class="nav-item nav-link" href="booking.html">订单管理</a>
+                    <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
+                    <a class="nav-item nav-link" href="admin.html">管理员操作</a>
+                    <div class="search_main"><img src="images/search-icon.png"></div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <!-- header section end -->
+
+    <!-- 支付页面内容 -->
+    <div class="container mt-5">
+        <h2>选择支付方式</h2>
+        <div class="payment-methods">
+            <div class="payment-method" id="alipay">
+                <img src="images/alipay.png" alt="支付宝">
+            </div>
+            <div class="payment-method" id="wechatpay">
+                <img src="images/wechatpay.png" alt="微信支付">
+            </div>
+            <div class="payment-method" id="unionpay">
+                <img src="images/unionpay.png" alt="银联支付">
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 文件 -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // 从本地存储中获取订单信息
+            // 这里假设订单信息存储在本地存储中，实际情况是通过服务器端接口获取
+            const orderInfo = JSON.parse(localStorage.getItem('orderInfo'));
+            /*
+            if (!orderInfo) {
+                alert('订单信息不存在，请重新生成订单。');
+                window.location.href = 'booking.html';
+                return;
+            }
+            */
+           
+            // 支付方式点击事件
+            $('.payment-method').click(function () {
+                const paymentMethod = $(this).attr('id');
+
+                // 模拟支付请求
+                const paymentData = {
+                    order_id: orderInfo.order_id,
+                    total_amount: orderInfo.total_amount,
+                    subject: orderInfo.subject,
+                    payment_method: paymentMethod
+                };
+
+                // 调用相应支付方式的 API
+                switch (paymentMethod) {
+                    case 'alipay':
+                        handleAlipayPayment(paymentData);
+                        break;
+                    case 'wechatpay':
+                        handleWechatPayPayment(paymentData);
+                        break;
+                    case 'unionpay':
+                        handleUnionPayPayment(paymentData);
+                        break;
+                    default:
+                        alert('请选择有效的支付方式。');
+                }
+            });
+
+            // 处理支付宝支付
+            function handleAlipayPayment(paymentData) {
+                // 模拟调用支付宝 API
+                // 这里假设有一个服务器端接口 `create_alipay_order` 生成支付宝支付链接
+                $.ajax({
+                    url: '/create_alipay_order',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(paymentData),
+                    success: function (response) {
+                        // 跳转到支付宝支付页面
+                        window.location.href = response.pay_url;
+                    },
+                    error: function (error) {
+                        alert('生成支付宝支付链接失败，请稍后再试。');
+                        console.error(error);
+                    }
+                });
+            }
+
+            // 处理微信支付
+            function handleWechatPayPayment(paymentData) {
+                // 模拟调用微信支付 API
+                // 这里假设有一个服务器端接口 `create_wechatpay_order` 生成微信支付链接
+                $.ajax({
+                    url: '/create_wechatpay_order',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(paymentData),
+                    success: function (response) {
+                        // 跳转到微信支付页面
+                        window.location.href = response.pay_url;
+                    },
+                    error: function (error) {
+                        alert('生成微信支付链接失败，请稍后再试。');
+                        console.error(error);
+                    }
+                });
+            }
+
+            // 处理银联支付
+            function handleUnionPayPayment(paymentData) {
+                // 模拟调用银联支付 API
+                // 这里假设有一个服务器端接口 `create_unionpay_order` 生成银联支付链接
+                $.ajax({
+                    url: '/create_unionpay_order',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(paymentData),
+                    success: function (response) {
+                        // 跳转到银联支付页面
+                        window.location.href = response.pay_url;
+                    },
+                    error: function (error) {
+                        alert('生成银联支付链接失败，请稍后再试。');
+                        console.error(error);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
