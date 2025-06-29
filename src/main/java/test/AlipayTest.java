@@ -10,6 +10,15 @@ import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class AlipayTest {
 
     public static void main(String[] args) throws AlipayApiException {
@@ -41,11 +50,26 @@ public class AlipayTest {
         if (response.isSuccess()) {
             System.out.println("✅ 支付预创建成功!");
             System.out.println("交易号: " + response.getOutTradeNo());
-            System.out.println("二维码链接: " + response.getQrCode()); // 预创建返回二维码
-        } else {
-            System.out.println("❌ 支付预创建失败!");
-            System.out.println("错误码: " + response.getCode());
-            System.out.println("错误信息: " + response.getMsg());
+            String qrCodeUrl = response.getQrCode();
+            System.out.println("二维码链接: " + qrCodeUrl);
+
+            if (qrCodeUrl != null && !qrCodeUrl.isEmpty()) {
+                try {
+                    // 使用 zxing 生成二维码
+                    BitMatrix bitMatrix = new MultiFormatWriter().encode(qrCodeUrl, BarcodeFormat.QR_CODE, 250, 250);
+                    String outputPath = "qrcode.png"; // 相对路径
+                    try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+                        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", fos);
+                        System.out.println("✅ 二维码图片已生成: " + new File(outputPath).getAbsolutePath());
+                    }
+                } catch (com.google.zxing.WriterException e) {
+                    System.err.println("❌ 二维码编码失败: " + e.getMessage());
+                } catch (IOException e) {
+                    System.err.println("❌ 生成二维码图片失败: " + e.getMessage());
+                }
+            } else {
+                System.err.println("❌ 二维码链接无效或为空");
+            }
         }
     }
 }

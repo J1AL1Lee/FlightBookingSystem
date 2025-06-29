@@ -19,11 +19,12 @@ public class User {
         this.userSignUpTime = LocalDateTime.now(); // 注册时间设为当前时间
     }
 
-    public User(String userId, String userPassword, String userName) {
+    public User(String userId, String userPassword, String userName,String userTelephone) {
         this();
         this.userId = userId;        // 身份证号
         this.userPassword = userPassword;
         this.userName = userName;    // 真实姓名
+        this.userTelephone = userTelephone;
     }
 
     // Getter和Setter
