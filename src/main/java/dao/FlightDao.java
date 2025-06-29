@@ -5,6 +5,8 @@ import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FlightDao {
 
@@ -98,34 +100,62 @@ public class FlightDao {
     }
 
     /**
-     * 核心搜索功能：根据起降机场搜索航班
-     * @param airportFrom 起飞机场
-     * @param airportTo 到达机场
-     * @return 匹配的航班列表
+     * 模糊查询航班信息
+     * @param airportFrom 出发地关键词（支持模糊查询，如"上海"、"北京"等）
+     * @param airportTo 目的地关键词（支持模糊查询，如"上海"、"北京"等）
+     * @return 匹配的航班列表，按出发时间排序
      */
     public List<Flight> searchFlights(String airportFrom, String airportTo) {
-        String sql = "SELECT * FROM flight WHERE airport_from = ? AND airport_to = ? ORDER BY time_takeoff";
+        // 使用 LIKE 进行模糊查询，% 通配符匹配任意字符
+        String sql = "SELECT * FROM flight " +
+                "WHERE (airport_from LIKE ? OR airport_from LIKE ?) " +
+                "AND (airport_to LIKE ? OR airport_to LIKE ?) " +
+                "ORDER BY time_takeoff";
+
         List<Flight> flights = new ArrayList<>();
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, airportFrom);
-            ps.setString(2, airportTo);
+            // 设置模糊查询参数
+            // 对于出发地：既匹配包含关键词的，也匹配以关键词开头的
+            ps.setString(1, "%" + airportFrom + "%");  // 包含关键词
+            ps.setString(2, airportFrom + "%");        // 以关键词开头
+
+            // 对于目的地：同样处理
+            ps.setString(3, "%" + airportTo + "%");    // 包含关键词
+            ps.setString(4, airportTo + "%");          // 以关键词开头
+
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 flights.add(mapResultSetToFlight(rs));
             }
 
-            System.out.println("🔍 搜索航班 " + airportFrom + " → " + airportTo + "，找到 " + flights.size() + " 个航班");
+            System.out.println("🔍 模糊搜索航班 \"" + airportFrom + "\" → \"" + airportTo +
+                    "\"，找到 " + flights.size() + " 个航班");
+
+            // 打印匹配的机场信息，方便调试
+            if (!flights.isEmpty()) {
+                Set<String> fromAirports = flights.stream()
+                        .map(Flight::getAirportFrom)
+                        .collect(Collectors.toSet());
+                Set<String> toAirports = flights.stream()
+                        .map(Flight::getAirportTo)
+                        .collect(Collectors.toSet());
+
+                System.out.println("📍 匹配的出发机场: " + String.join(", ", fromAirports));
+                System.out.println("📍 匹配的到达机场: " + String.join(", ", toAirports));
+            }
+
             return flights;
 
         } catch (SQLException e) {
-            System.err.println("❌ 搜索航班失败: " + e.getMessage());
+            System.err.println("❌ 模糊搜索航班失败: " + e.getMessage());
             throw new RuntimeException("搜索航班失败: " + e.getMessage());
         }
     }
+
 
     /**
      * 根据航空公司查找航班
