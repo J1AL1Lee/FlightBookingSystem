@@ -15,8 +15,8 @@
 
     <!-- 项目属性配置 -->
     <properties>
-        <maven.compiler.source>21</maven.compiler.source> <!-- 支付宝 SDK 最低要求 -->
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>23</maven.compiler.source> <!-- 支付宝 SDK 最低要求 -->
+        <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.33</mysql.version>
         <gson.version>2.10.1</gson.version>
