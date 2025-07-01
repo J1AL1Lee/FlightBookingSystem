@@ -206,6 +206,57 @@ public class FlightSearchService {
         return availableFlights;
     }
 
+    // 在 FlightSearchService 中添加以下方法
+
+    /**
+     * 模糊搜索航班号
+     * @param flightIdPattern 航班号模式（支持部分匹配）
+     * @return 匹配的航班列表
+     */
+    public List<Flight> searchFlightsByIdPattern(String flightIdPattern) {
+        try {
+            List<Flight> matchedFlights = flightDao.findByIdPattern(flightIdPattern);
+            System.out.println("🔍 模糊搜索航班号包含 \"" + flightIdPattern + "\" 找到 " + matchedFlights.size() + " 个航班");
+            return matchedFlights;
+        } catch (Exception e) {
+            System.err.println("❌ 模糊搜索航班号失败: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 根据航班号前缀搜索航班（常用于航空公司代码搜索）
+     * @param prefix 航班号前缀，如"CZ"、"CA"等
+     * @return 匹配的航班列表
+     */
+    public List<Flight> searchFlightsByIdPrefix(String prefix) {
+        try {
+            List<Flight> matchedFlights = flightDao.findByIdPrefix(prefix);
+            System.out.println("🔍 前缀搜索航班号 \"" + prefix + "\" 找到 " + matchedFlights.size() + " 个航班");
+            return matchedFlights;
+        } catch (Exception e) {
+            System.err.println("❌ 前缀搜索航班号失败: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 智能搜索航班号（推荐使用）
+     * 自动选择最合适的搜索策略：精确 → 前缀 → 模糊
+     * @param searchTerm 搜索词
+     * @return 匹配的航班列表
+     */
+    public List<Flight> smartSearchFlightId(String searchTerm) {
+        try {
+            List<Flight> matchedFlights = flightDao.smartSearchFlightId(searchTerm);
+            System.out.println("🧠 智能搜索航班号 \"" + searchTerm + "\" 找到 " + matchedFlights.size() + " 个航班");
+            return matchedFlights;
+        } catch (Exception e) {
+            System.err.println("❌ 智能搜索航班号失败: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     /**
      * 按价格范围搜索航班（考虑VIP折扣）
      * @param airportFrom 起飞机场

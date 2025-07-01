@@ -389,6 +389,107 @@ public class FlightDao {
         }
     }
 
+    // 在 FlightDao 中添加以下方法
+
+    /**
+     * 根据航班号模式模糊查询航班
+     * @param flightIdPattern 航班号模式（支持LIKE查询）
+     * @return 匹配的航班列表
+     */
+    public List<Flight> findByIdPattern(String flightIdPattern) {
+        String sql = "SELECT * FROM flight WHERE flight_ID LIKE ? ORDER BY flight_ID";
+        List<Flight> flights = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // 添加通配符支持模糊查询
+            ps.setString(1, "%" + flightIdPattern + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                flights.add(mapResultSetToFlight(rs));
+            }
+
+            System.out.println("🔍 模糊查询航班号包含 \"" + flightIdPattern + "\" 找到 " + flights.size() + " 个航班");
+
+            // 打印匹配的航班号，方便调试
+            if (!flights.isEmpty()) {
+                List<String> flightIds = flights.stream()
+                        .map(Flight::getFlightId)
+                        .collect(Collectors.toList());
+                System.out.println("📍 匹配的航班号: " + String.join(", ", flightIds));
+            }
+
+            return flights;
+
+        } catch (SQLException e) {
+            System.err.println("❌ 模糊查询航班号失败: " + e.getMessage());
+            throw new RuntimeException("模糊查询航班号失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 根据航班号前缀查询航班（常用于航空公司代码搜索）
+     * @param prefix 航班号前缀，如"CZ"、"CA"等
+     * @return 匹配的航班列表
+     */
+    public List<Flight> findByIdPrefix(String prefix) {
+        String sql = "SELECT * FROM flight WHERE flight_ID LIKE ? ORDER BY flight_ID";
+        List<Flight> flights = new ArrayList<>();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // 前缀匹配
+            ps.setString(1, prefix + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                flights.add(mapResultSetToFlight(rs));
+            }
+
+            System.out.println("🔍 查询航班号前缀为 \"" + prefix + "\" 的航班，找到 " + flights.size() + " 个");
+            return flights;
+
+        } catch (SQLException e) {
+            System.err.println("❌ 根据前缀查询航班失败: " + e.getMessage());
+            throw new RuntimeException("根据前缀查询航班失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 智能搜索航班号（支持多种模式）
+     * @param searchTerm 搜索词
+     * @return 匹配的航班列表
+     */
+    public List<Flight> smartSearchFlightId(String searchTerm) {
+        List<Flight> results = new ArrayList<>();
+
+        // 1. 先尝试精确匹配
+        Flight exactMatch = findById(searchTerm.toUpperCase());
+        if (exactMatch != null) {
+            results.add(exactMatch);
+            System.out.println("✅ 精确匹配航班: " + searchTerm);
+            return results;
+        }
+
+        // 2. 再尝试前缀匹配（如果搜索词是2-3位，可能是航空公司代码）
+        if (searchTerm.length() <= 3) {
+            results = findByIdPrefix(searchTerm.toUpperCase());
+            if (!results.isEmpty()) {
+                System.out.println("✅ 前缀匹配航班: " + searchTerm);
+                return results;
+            }
+        }
+
+        // 3. 最后尝试模糊匹配
+        results = findByIdPattern(searchTerm.toUpperCase());
+        System.out.println("✅ 模糊匹配航班: " + searchTerm);
+
+        return results;
+    }
+
     /**
      * 更新航班信息
      * @param flight 航班对象

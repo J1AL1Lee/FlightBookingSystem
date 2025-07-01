@@ -17,62 +17,20 @@
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <!-- style css -->
     <link rel="stylesheet" type="text/css" href="css/style.css">
+    <!-- search page specific css -->
+    <link rel="stylesheet" type="text/css" href="css/search.css">
     <!-- Responsive-->
     <link rel="stylesheet" href="css/responsive.css">
     <!-- fevicon -->
-    <link rel="icon" href="../../src/main/resources/static/images/fevicon.png" type="image/gif" />
+    <link rel="icon" href="images/fevicon.png" type="image/gif" />
     <!-- Scrollbar Custom CSS -->
     <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
     <!-- Tweaks for older IEs-->
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
     <!-- owl stylesheets -->
     <link rel="stylesheet" href="css/owl.carousel.min.css">
-    <link rel="stylesheet" href="../../src/main/resources/static/css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
-    <style>
-        .real-time-clock {
-            font-size: 14px;
-            color: #fff;
-            background-color: #000;
-            padding: 5px 10px;
-            border-radius: 5px;
-            position: relative;
-            top: -50px;
-            right: 10px;
-            z-index: 9999;
-        }
-
-        /* 起降地对调按钮样式 */
-        .swap-button {
-            background: #007bff;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .swap-button:hover {
-            background: #0056b3;
-            transform: rotate(180deg);
-        }
-
-        .form-row-with-swap {
-            display: flex;
-            align-items: end;
-            gap: 10px;
-        }
-
-        .input-group-swap {
-            flex: 1;
-        }
-    </style>
 </head>
 <body>
 <!-- header section start -->
@@ -105,28 +63,66 @@
     <div class="container">
         <!-- 筛选条件部分 -->
         <div class="filter_section">
-            <h1 class="filter_heading" onclick="changeTitle()" id = 'title_search'>航班查询</h1>
+            <h1 class="filter_heading" onclick="changeTitle()" id='title_search'>航班查询</h1>
+
+            <!-- 查询方式切换按钮 -->
+            <div class="search-mode-toggle">
+                <button class="mode-btn active" id="routeMode" onclick="switchSearchMode('route')">
+                    <i class="fa fa-map-marker"></i> 按起降地查询
+                </button>
+                <button class="mode-btn" id="flightIdMode" onclick="switchSearchMode('flightId')">
+                    <i class="fa fa-plane"></i> 按航班号查询
+                </button>
+            </div>
+
             <form id="flightFilterForm">
-                <div class="form-row-with-swap">
-                    <div class="input-group-swap col-md-3">
-                        <label for="departure">出发地</label>
-                        <input type="text" class="form-control" id="departure" placeholder="请输入出发地">
+                <!-- 起降地查询区域 -->
+                <div id="routeSearchSection" class="search-section">
+                    <div class="form-row-with-swap">
+                        <div class="input-group-swap col-md-3">
+                            <label for="departure">出发地</label>
+                            <input type="text" class="form-control" id="departure" placeholder="请输入出发地">
+                        </div>
+                        <button type="button" class="swap-button" id="swapButton" title="对调起降地">
+                            <i class="fa fa-exchange"></i>
+                        </button>
+                        <div class="input-group-swap col-md-3">
+                            <label for="destination">目的地</label>
+                            <input type="text" class="form-control" id="destination" placeholder="请输入目的地">
+                        </div>
+                        <div class="input-group-swap col-md-3">
+                            <label for="departureDate">出发日期</label>
+                            <input type="date" class="form-control" id="departureDate" placeholder="请选择出发日期">
+                        </div>
+                        <div class="input-group-swap col-md-3">
+                            <button type="submit" class="btn btn-primary" id="searchButton">查询</button>
+                        </div>
                     </div>
-                    <button type="button" class="swap-button" id="swapButton" title="对调起降地">
-                        <i class="fa fa-exchange"></i>
-                    </button>
-                    <div class="input-group-swap col-md-3">
-                        <label for="destination">目的地</label>
-                        <input type="text" class="form-control" id="destination" placeholder="请输入目的地">
-                    </div>
-                    <div class="input-group-swap col-md-3">
-                        <label for="departureDate">出发日期</label>
-                        <input type="date" class="form-control" id="departureDate" placeholder="请选择出发日期">
-                    </div>
-                    <div class="input-group-swap col-md-3">
-                        <button type="submit" class="btn btn-primary" id="searchButton">查询</button>
+                    <div class="search-hint">
+                        💡 支持模糊匹配：如输入"北京"可匹配"北京首都国际机场"
                     </div>
                 </div>
+
+                <!-- 航班号查询区域 -->
+                <div id="flightIdSearchSection" class="search-section hidden">
+                    <div class="flight-id-search">
+                        <div class="flight-id-input">
+                            <label for="flightNumber">航班号</label>
+                            <input type="text" class="form-control" id="flightNumber" placeholder="请输入航班号，如：CZ3018">
+                        </div>
+                        <div class="input-group-swap col-md-3">
+                            <label for="flightDate">出发日期（可选）</label>
+                            <input type="date" class="form-control" id="flightDate" placeholder="不填则搜索未来7天">
+                        </div>
+                        <div class="input-group-swap col-md-2">
+                            <button type="submit" class="btn btn-primary" id="flightSearchButton">查询</button>
+                        </div>
+                    </div>
+                    <div class="search-hint">
+                        💡 智能搜索：输入"CZ"查找所有南航航班，输入"301"查找所有包含301的航班号
+                    </div>
+                </div>
+
                 <hr>
                 <!-- 更多筛选条件 -->
                 <div class="additional_filters">
@@ -149,6 +145,7 @@
             </form>
         </div>
         <!-- 筛选条件部分结束 -->
+
         <!-- 航班信息展示部分 -->
         <div class="flight_results" id="flightResults" style="display: none;">
             <h3>查询结果 <span id="resultsCount" style="color: #007bff;"></span></h3>
@@ -177,7 +174,6 @@
     <!-- filter && results section end -->
 </div>
 
-
 <!-- footer section start -->
 <div class="layout_padding footer_section">
     <div class="container">
@@ -203,7 +199,7 @@
     </div>
 </div>
 <!-- footer section end -->
-<!-- copyright section end -->
+
 <!-- Javascript files-->
 <script src="js/jquery.min.js"></script>
 <script src="js/popper.min.js"></script>
@@ -214,17 +210,66 @@
 <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
 <script src="js/custom.js"></script>
 <!-- javascript -->
-<script src="../../src/main/resources/static/js/owl.carousel.js"></script>
+<script src="js/owl.carousel.js"></script>
 <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
 
 <!-- 航班查询功能 -->
 <script>
+    let currentSearchMode = 'route'; // 当前搜索模式
+
     // 设置默认日期为今天
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('departureDate').value = today;
         document.getElementById('departureDate').min = today; // 不能选择过去的日期
+        document.getElementById('flightDate').min = today; // 航班号查询的日期也不能选择过去
     });
+
+    // 切换搜索模式
+    function switchSearchMode(mode) {
+        currentSearchMode = mode;
+
+        const routeBtn = document.getElementById('routeMode');
+        const flightIdBtn = document.getElementById('flightIdMode');
+        const routeSection = document.getElementById('routeSearchSection');
+        const flightIdSection = document.getElementById('flightIdSearchSection');
+
+        if (mode === 'route') {
+            // 激活起降地查询
+            routeBtn.classList.add('active');
+            flightIdBtn.classList.remove('active');
+            routeSection.classList.remove('hidden');
+            flightIdSection.classList.add('hidden');
+
+            // 清空航班号输入
+            document.getElementById('flightNumber').value = '';
+            // 移除航班号输入的required属性
+            document.getElementById('flightNumber').removeAttribute('required');
+            // 为起降地输入添加required属性
+            document.getElementById('departure').setAttribute('required', 'required');
+            document.getElementById('destination').setAttribute('required', 'required');
+            document.getElementById('departureDate').setAttribute('required', 'required');
+        } else {
+            // 激活航班号查询
+            flightIdBtn.classList.add('active');
+            routeBtn.classList.remove('active');
+            flightIdSection.classList.remove('hidden');
+            routeSection.classList.add('hidden');
+
+            // 清空起降地输入
+            document.getElementById('departure').value = '';
+            document.getElementById('destination').value = '';
+            // 移除起降地输入的required属性
+            document.getElementById('departure').removeAttribute('required');
+            document.getElementById('destination').removeAttribute('required');
+            document.getElementById('departureDate').removeAttribute('required');
+            // 为航班号输入添加required属性
+            document.getElementById('flightNumber').setAttribute('required', 'required');
+        }
+
+        // 隐藏之前的搜索结果
+        document.getElementById('flightResults').style.display = 'none';
+    }
 
     // 起降地对调功能
     document.getElementById('swapButton').addEventListener('click', function() {
@@ -246,11 +291,33 @@
     // 阻止表单默认提交，改用事件处理
     document.getElementById('flightFilterForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        searchFlights();
+
+        // 根据当前模式验证必填字段
+        if (currentSearchMode === 'route') {
+            const departure = document.getElementById('departure').value.trim();
+            const destination = document.getElementById('destination').value.trim();
+            const departureDate = document.getElementById('departureDate').value;
+
+            if (!departure || !destination || !departureDate) {
+                alert('请填写完整的查询信息！');
+                return;
+            }
+
+            searchFlightsByRoute();
+        } else {
+            const flightNumber = document.getElementById('flightNumber').value.trim();
+
+            if (!flightNumber) {
+                alert('请输入航班号！');
+                return;
+            }
+
+            searchFlightsByFlightId();
+        }
     });
 
-    // 航班查询主函数
-    async function searchFlights() {
+    // 按起降地查询航班
+    async function searchFlightsByRoute() {
         const departure = document.getElementById('departure').value.trim();
         const destination = document.getElementById('destination').value.trim();
         const departureDate = document.getElementById('departureDate').value;
@@ -272,7 +339,6 @@
         searchButton.textContent = '查询中...';
 
         try {
-            // 调用你的API
             const response = await fetch('/api/flights/search', {
                 method: 'POST',
                 headers: {
@@ -282,7 +348,7 @@
                     airportFrom: departure,
                     airportTo: destination,
                     flightDate: departureDate,
-                    userId: getCurrentUserId() // 可选，用于VIP判断
+                    userId: getCurrentUserId()
                 })
             });
 
@@ -293,7 +359,69 @@
             }
 
             if (result.success) {
-                displayFlightResults(result.data, result.count);
+                displayFlightResults(result.data, result.count, `${departure} → ${destination} (${departureDate})`);
+                console.log('查询成功:', result.message);
+            } else {
+                alert(result.message || '查询失败');
+            }
+
+        } catch (error) {
+            console.error('航班查询失败:', error);
+            alert('查询失败: ' + error.message);
+        } finally {
+            // 恢复按钮状态
+            searchButton.disabled = false;
+            searchButton.textContent = '查询';
+        }
+    }
+
+    // 按航班号查询航班
+    async function searchFlightsByFlightId() {
+        const flightNumber = document.getElementById('flightNumber').value.trim();
+        const flightDate = document.getElementById('flightDate').value;
+        const searchButton = document.getElementById('flightSearchButton');
+
+        // 基本验证
+        if (!flightNumber) {
+            alert('请输入航班号！');
+            return;
+        }
+
+        // 设置加载状态
+        searchButton.disabled = true;
+        searchButton.textContent = '查询中...';
+
+        try {
+            const requestBody = {
+                flightId: flightNumber,
+                fuzzySearch: true, // 默认启用智能搜索
+                userId: getCurrentUserId()
+            };
+
+            // 如果指定了日期，加入请求
+            if (flightDate) {
+                requestBody.flightDate = flightDate;
+            }
+
+            const response = await fetch('/api/flights/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || '查询失败');
+            }
+
+            if (result.success) {
+                const searchInfo = flightDate ?
+                    `航班号"${flightNumber}" (${flightDate})` :
+                    `航班号"${flightNumber}" (未来7天)`;
+                displayFlightResults(result.data, result.count, `智能搜索: ${searchInfo}`);
                 console.log('查询成功:', result.message);
             } else {
                 alert(result.message || '查询失败');
@@ -310,7 +438,7 @@
     }
 
     // 显示航班查询结果
-    function displayFlightResults(flights, count) {
+    function displayFlightResults(flights, count, searchInfo) {
         const tableBody = document.getElementById('flightTableBody');
         const flightResults = document.getElementById('flightResults');
         const resultsCount = document.getElementById('resultsCount');
@@ -319,16 +447,16 @@
         tableBody.innerHTML = '';
 
         // 更新结果计数
-        resultsCount.textContent = `（共找到 ${count} 个航班）`;
+        resultsCount.textContent = `（${searchInfo}，共找到 ${count} 个航班）`;
 
         if (flights.length === 0) {
             tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="11" style="text-align: center; padding: 30px; color: #666;">
-                            暂无符合条件的航班，请尝试调整查询条件
-                        </td>
-                    </tr>
-                `;
+                <tr>
+                    <td colspan="11" style="text-align: center; padding: 30px; color: #666;">
+                        暂无符合条件的航班，请尝试调整查询条件
+                    </td>
+                </tr>
+            `;
         } else {
             // 生成航班数据行
             flights.forEach(flight => {
@@ -369,23 +497,23 @@
         const vipBadge = flight.isVipUser ? '<span style="background: gold; color: black; padding: 2px 5px; border-radius: 3px; font-size: 10px;">VIP</span>' : '';
 
         tr.innerHTML = `
-                <td style="font-weight: bold; color: #007bff;">${flight.flightId}</td>
-                <td>${flight.airlineName} ${vipBadge}</td>
-                <td><strong>${flight.airportFrom}</strong></td>
-                <td><strong>${flight.airportTo}</strong></td>
-                <td>${departureTime}</td>
-                <td>${arrivalTime}</td>
-                <td>${economySeat}</td>
-                <td>${businessSeat}</td>
-                <td style="color: #e74c3c; font-weight: bold;">${economyPrice}</td>
-                <td style="color: #e74c3c; font-weight: bold;">${businessPrice}</td>
-                <td>
-                    <button class="btn btn-primary btn-sm" onclick="bookFlight('${flight.flightrecordId}', '${flight.flightId}')"
-                            ${flight.seat0Left === 0 && flight.seat1Left === 0 ? 'disabled' : ''}>
-                        ${flight.seat0Left === 0 && flight.seat1Left === 0 ? '已售罄' : '预订'}
-                    </button>
-                </td>
-            `;
+            <td style="font-weight: bold; color: #007bff;">${flight.flightId}</td>
+            <td>${flight.airlineName} ${vipBadge}</td>
+            <td><strong>${flight.airportFrom}</strong></td>
+            <td><strong>${flight.airportTo}</strong></td>
+            <td>${departureTime}</td>
+            <td>${arrivalTime}</td>
+            <td>${economySeat}</td>
+            <td>${businessSeat}</td>
+            <td style="color: #e74c3c; font-weight: bold;">${economyPrice}</td>
+            <td style="color: #e74c3c; font-weight: bold;">${businessPrice}</td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="bookFlight('${flight.flightrecordId}', '${flight.flightId}')"
+                        ${flight.seat0Left === 0 && flight.seat1Left === 0 ? 'disabled' : ''}>
+                    ${flight.seat0Left === 0 && flight.seat1Left === 0 ? '已售罄' : '预订'}
+                </button>
+            </td>
+        `;
 
         return tr;
     }
@@ -404,10 +532,10 @@
 
         if (hasDiscount && originalPrice && originalPrice > finalPrice) {
             priceHtml = `
-                    <span style="text-decoration: line-through; color: #999; font-size: 12px;">¥${originalPrice}</span><br>
-                    ¥${finalPrice}
-                    <span style="background: #f39c12; color: white; padding: 1px 4px; border-radius: 2px; font-size: 10px;">${Math.round(discount * 100)}折</span>
-                `;
+                <span style="text-decoration: line-through; color: #999; font-size: 12px;">¥${originalPrice}</span><br>
+                ¥${finalPrice}
+                <span style="background: #f39c12; color: white; padding: 1px 4px; border-radius: 2px; font-size: 10px;">${Math.round(discount * 100)}折</span>
+            `;
         }
 
         return priceHtml;
@@ -416,10 +544,20 @@
     // 预订航班功能
     function bookFlight(flightrecordId, flightId) {
         if (confirm(`确定要预订航班 ${flightId} 吗？`)) {
-            // 这里可以跳转到预订页面
+            // 缓存航班信息（如果需要）
+            const flightData = window.flightSearchResults?.find(flight =>
+                flight.flightrecordId === flightrecordId
+            );
+
+            if (flightData) {
+                localStorage.setItem('currentFlightBooking', JSON.stringify({
+                    ...flightData,
+                    timestamp: Date.now()
+                }));
+            }
+
             console.log(`预订航班: ${flightId}, 记录ID: ${flightrecordId}`);
             window.location.href = `booking_demo.html?flightrecordId=${flightrecordId}&flightId=${flightId}`;
-            //alert('预订功能开发中...');
         }
     }
 

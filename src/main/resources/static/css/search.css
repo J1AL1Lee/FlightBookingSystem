@@ -1,0 +1,361 @@
+/* 搜索页面专用样式 */
+
+/* 实时时钟样式 */
+.real-time-clock {
+    font-size: 14px;
+    color: #fff;
+    background-color: #000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    position: relative;
+    top: -50px;
+    right: 10px;
+    z-index: 9999;
+}
+
+/* 查询方式切换按钮样式 */
+.search-mode-toggle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+.mode-btn {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    color: #495057;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0;
+}
+
+.mode-btn:first-child {
+    border-top-left-radius: 25px;
+    border-bottom-left-radius: 25px;
+}
+
+.mode-btn:last-child {
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    border-left: none;
+}
+
+.mode-btn.active {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.mode-btn:hover:not(.active) {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* 起降地对调按钮样式 */
+.swap-button {
+    background: #007bff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.swap-button:hover {
+    background: #0056b3;
+    transform: rotate(180deg);
+}
+
+.form-row-with-swap {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.input-group-swap {
+    flex: 1;
+}
+
+/* 查询区域显示/隐藏动画 */
+.search-section {
+    transition: all 0.4s ease;
+    opacity: 1;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.search-section.hidden {
+    opacity: 0;
+    max-height: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* 航班号搜索区域样式 */
+.flight-id-search {
+    display: flex;
+    align-items: end;
+    gap: 15px;
+    justify-content: center;
+}
+
+.flight-id-input {
+    flex: 0 0 300px;
+}
+
+/* 搜索提示样式 */
+.search-hint {
+    text-align: center;
+    color: #6c757d;
+    font-size: 14px;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+/* 登录相关样式 */
+.logout-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    margin-left: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.main_login_bt {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.main_login_bt:hover {
+    background-color: #0056b3;
+    color: white;
+    text-decoration: none;
+}
+
+/* 航班结果表格优化 */
+.flight_results {
+    margin-top: 30px;
+}
+
+.flight_results h3 {
+    color: #333;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+}
+
+#flightResultsTable {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+#flightResultsTable thead th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    padding: 15px 10px;
+    border: none;
+}
+
+#flightResultsTable tbody td {
+    text-align: center;
+    padding: 12px 8px;
+    vertical-align: middle;
+    border-color: #e9ecef;
+}
+
+#flightResultsTable tbody tr:hover {
+    background-color: #f8f9ff;
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* 预订按钮样式 */
+.btn-primary.btn-sm {
+    padding: 6px 15px;
+    font-size: 14px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary.btn-sm:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary.btn-sm:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* 表单控件优化 */
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* 筛选区域样式 */
+.filter_section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.filter_heading {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.filter_heading:hover {
+    color: #007bff;
+}
+
+/* 附加筛选条件样式 */
+.additional_filters {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.additional_filters label {
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.form-check-inline {
+    margin-right: 20px;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .search-mode-toggle {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .mode-btn {
+        border-radius: 0 !important;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .mode-btn:first-child {
+        border-top-left-radius: 25px !important;
+        border-top-right-radius: 25px !important;
+    }
+
+    .mode-btn:last-child {
+        border-bottom-left-radius: 25px !important;
+        border-bottom-right-radius: 25px !important;
+        border-left: 2px solid #dee2e6;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .form-row-with-swap {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .swap-button {
+        align-self: center;
+        margin-top: 0;
+    }
+
+    .flight-id-search {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .flight-id-input {
+        flex: 1;
+    }
+
+    /* 表格在小屏幕上的优化 */
+    #flightResultsTable {
+        font-size: 12px;
+    }
+
+    #flightResultsTable th,
+    #flightResultsTable td {
+        padding: 8px 4px;
+    }
+
+    /* 隐藏一些不重要的列 */
+    #flightResultsTable th:nth-child(2),
+    #flightResultsTable td:nth-child(2),
+    #flightResultsTable th:nth-child(6),
+    #flightResultsTable td:nth-child(6) {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .real-time-clock {
+        position: static;
+        float: none;
+        display: block;
+        text-align: center;
+        margin: 10px auto;
+    }
+
+    .filter_section {
+        padding: 20px 15px;
+    }
+
+    .search-hint {
+        font-size: 12px;
+    }
+
+    /* 更激进的表格优化 */
+    #flightResultsTable th:nth-child(3),
+    #flightResultsTable td:nth-child(3),
+    #flightResultsTable th:nth-child(4),
+    #flightResultsTable td:nth-child(4) {
+        display: none;
+    }
+}

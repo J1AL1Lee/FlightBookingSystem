@@ -1,6 +1,7 @@
 // 全局变量
 let selectedSeatType = 0; // 默认选择经济舱
 let flightrecordId = null;
+let flightId = null;
 let flightInfo = null;
 let currentUser = null;
 let priceInfo = {
@@ -29,36 +30,14 @@ async function initializePage() {
             return;
         }
 
-        // 3. 优先加载航班信息（因为用户信息相对稳定）
-        try {
-            await loadFlightInfo();
-            console.log('✅ 航班信息加载成功');
-        } catch (flightError) {
-            console.warn('⚠️ 航班信息加载失败，但继续加载其他信息:', flightError.message);
-            // 不要阻止后续加载
-        }
+        // 3. 通过航班号查询API获取航班信息
+        await loadFlightInfoByApi();
 
         // 4. 加载用户信息
-        try {
-            await loadUserInfo();
-            console.log('✅ 用户信息加载成功');
-        } catch (userError) {
-            console.warn('⚠️ 用户详细信息加载失败，使用缓存信息:', userError.message);
-            // 使用缓存的用户信息
-            displayUserInfo();
-        }
+        await loadUserInfo();
 
-        // 5. 加载价格信息
-        try {
-            await loadPriceInfo();
-            console.log('✅ 价格信息加载成功');
-        } catch (priceError) {
-            console.warn('⚠️ 价格信息加载失败，使用默认价格:', priceError.message);
-            // 使用默认价格
-            priceInfo.economy.price = 500;
-            priceInfo.business.price = 1200;
-            updatePriceDisplay();
-        }
+        // 5. 加载价格信息（基于获取到的航班信息）
+        await loadPriceInfo();
 
         // 6. 默认选择经济舱
         selectSeat(0);
@@ -71,18 +50,14 @@ async function initializePage() {
 
     } catch (error) {
         console.error('❌ 页面初始化失败:', error);
-        showMessage('页面初始化失败：' + error.message + '\n\n已加载默认信息，您仍可以尝试预订。', 'error');
+        showMessage('页面初始化失败：' + error.message, 'error');
 
-        // 即使初始化失败，也要确保页面基本可用
-        if (!flightInfo) {
-            createDefaultFlightInfo();
-            updateFlightDisplay();
+        // 如果初始化失败，禁用预订按钮
+        const bookBtn = document.getElementById('bookBtn');
+        if (bookBtn) {
+            bookBtn.disabled = true;
+            bookBtn.innerHTML = '<i class="fa fa-exclamation-triangle"></i> 加载失败';
         }
-        if (!currentUser.userName) {
-            displayUserInfo();
-        }
-        updatePriceDisplay();
-        selectSeat(0);
     }
 }
 
@@ -115,6 +90,7 @@ function checkLoginStatus() {
 function getUrlParameters() {
     const urlParams = new URLSearchParams(window.location.search);
     flightrecordId = urlParams.get('flightrecordId');
+    flightId = urlParams.get('flightId');
 
     if (!flightrecordId) {
         showMessage('缺少航班信息，请返回重新选择', 'error');
@@ -124,8 +100,104 @@ function getUrlParameters() {
         return false;
     }
 
-    console.log('📝 航班记录ID:', flightrecordId);
+    // 如果没有flightId，从flightrecordId中解析
+    if (!flightId && flightrecordId) {
+        flightId = flightrecordId.substring(0, flightrecordId.length - 8);
+    }
+
+    console.log('📝 航班参数:', {
+        flightrecordId,
+        flightId
+    });
+
     return true;
+}
+
+// 通过航班号查询API获取航班信息
+async function loadFlightInfoByApi() {
+    try {
+        console.log('✈️ 开始通过API加载航班信息...');
+
+        if (!flightId) {
+            throw new Error('航班号不能为空');
+        }
+
+        // 从flightrecordId解析日期
+        const flightDate = flightrecordId.substring(flightrecordId.length - 8);
+        const formattedDate = `${flightDate.substring(0,4)}-${flightDate.substring(4,6)}-${flightDate.substring(6,8)}`;
+
+        console.log('🔍 查询航班:', flightId, '日期:', formattedDate);
+
+        // 调用航班号查询API
+        const response = await fetch('/api/flights/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                flightId: flightId,
+                flightDate: formattedDate,
+                fuzzySearch: false, // 精确搜索
+                userId: currentUser.userId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('🔍 API响应:', result);
+
+        if (!result.success) {
+            throw new Error(result.message || '查询航班信息失败');
+        }
+
+        if (!result.data || result.data.length === 0) {
+            throw new Error(`未找到航班 ${flightId} 在 ${formattedDate} 的信息`);
+        }
+
+        // 查找匹配的航班记录
+        let matchedFlight = result.data.find(flight =>
+            flight.flightrecordId === flightrecordId
+        );
+
+        // 如果没找到完全匹配的记录，使用第一个航班
+        if (!matchedFlight) {
+            console.warn('⚠️ 未找到完全匹配的航班记录，使用第一个匹配的航班');
+            matchedFlight = result.data[0];
+        }
+
+        // 转换API返回的数据格式
+        flightInfo = {
+            flightId: matchedFlight.flightId,
+            flightrecordId: matchedFlight.flightrecordId,
+            airlineName: matchedFlight.airlineName,
+            airportFrom: matchedFlight.airportFrom,
+            airportTo: matchedFlight.airportTo,
+            timeTakeoff: matchedFlight.timeTakeoff,
+            timeArrive: matchedFlight.timeArrive,
+            flightDate: matchedFlight.flightDate,
+            seat0Left: matchedFlight.seat0Left,
+            seat1Left: matchedFlight.seat1Left,
+            finalPrice0: matchedFlight.finalPrice0,
+            finalPrice1: matchedFlight.finalPrice1,
+            originalPrice0: matchedFlight.originalPrice0,
+            originalPrice1: matchedFlight.originalPrice1,
+            isVipUser: matchedFlight.isVipUser,
+            hasDiscount: matchedFlight.hasDiscount,
+            discount: matchedFlight.discount
+        };
+
+        // 更新页面显示
+        updateFlightDisplay();
+
+        console.log('✅ 航班信息加载成功:', flightInfo);
+
+    } catch (error) {
+        console.error('❌ 加载航班信息失败:', error);
+        throw new Error('加载航班信息失败：' + error.message);
+    }
 }
 
 // 加载用户信息
@@ -165,262 +237,30 @@ async function loadUserInfo() {
     }
 }
 
-// 加载航班信息
-async function loadFlightInfo() {
-    try {
-        console.log('✈️ 开始加载航班信息...');
-
-        // 从航班记录ID解析信息
-        const flightId = flightrecordId.substring(0, flightrecordId.length - 8);
-        const flightDate = flightrecordId.substring(flightrecordId.length - 8);
-        const formattedDate = `${flightDate.substring(0,4)}-${flightDate.substring(4,6)}-${flightDate.substring(6,8)}`;
-
-        console.log('📝 解析航班信息:', {
-            flightrecordId,
-            flightId,
-            flightDate,
-            formattedDate
-        });
-
-        // 方法1: 先尝试直接用URL参数构建航班信息
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('airportFrom') && urlParams.has('airportTo')) {
-            console.log('📝 从URL参数获取航班信息');
-            flightInfo = {
-                flightId: flightId,
-                flightrecordId: flightrecordId,
-                airlineName: urlParams.get('airlineName') || '中国南方航空',
-                airportFrom: urlParams.get('airportFrom'),
-                airportTo: urlParams.get('airportTo'),
-                timeTakeoff: urlParams.get('timeTakeoff') || '08:30',
-                timeArrive: urlParams.get('timeArrive') || '11:15',
-                flightDate: formattedDate,
-                seat0Left: parseInt(urlParams.get('seat0Left')) || 50,
-                seat1Left: parseInt(urlParams.get('seat1Left')) || 10
-            };
-
-            updateFlightDisplay();
-            console.log('✅ 从URL参数加载航班信息成功:', flightInfo);
-            return;
-        }
-
-        // 方法2: 尝试从localStorage获取最近的搜索结果
-        const recentSearch = localStorage.getItem('recentFlightSearch');
-        if (recentSearch) {
-            try {
-                const searchData = JSON.parse(recentSearch);
-                console.log('📝 从localStorage获取搜索参数:', searchData);
-
-                // 使用最近的搜索参数重新搜索
-                const searchResponse = await fetch('/api/flights/search', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        airportFrom: searchData.airportFrom,
-                        airportTo: searchData.airportTo,
-                        flightDate: searchData.flightDate || formattedDate,
-                        userId: currentUser.userId
-                    })
-                });
-
-                if (searchResponse.ok) {
-                    const searchResult = await searchResponse.json();
-                    console.log('🔍 搜索API响应:', searchResult);
-
-                    if (searchResult.success && searchResult.data && searchResult.data.length > 0) {
-                        // 查找匹配的航班
-                        let matchedFlight = searchResult.data.find(flight =>
-                            flight.flightrecordId === flightrecordId ||
-                            flight.flightId === flightId
-                        );
-
-                        // 如果没找到完全匹配，使用第一个航班
-                        if (!matchedFlight && searchResult.data.length > 0) {
-                            console.warn('⚠️ 未找到完全匹配的航班，使用第一个航班');
-                            matchedFlight = searchResult.data[0];
-                            // 更新航班记录ID以匹配实际数据
-                            matchedFlight.flightrecordId = flightrecordId;
-                        }
-
-                        if (matchedFlight) {
-                            flightInfo = matchedFlight;
-                            updateFlightDisplay();
-                            console.log('✅ 从搜索API加载航班信息成功:', flightInfo);
-                            return;
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn('⚠️ 使用localStorage搜索失败:', e);
-            }
-        }
-
-        // 方法3: 尝试智能解析航班ID获取机场信息
-        console.log('📝 尝试智能解析航班ID');
-        let airportFrom = 'PEK';
-        let airportTo = 'SHA';
-
-        // 常见的航班号格式解析
-        if (flightId.length >= 4) {
-            // 如果航班号以常见前缀开始，尝试解析
-            const airlineCode = flightId.substring(0, 2);
-            const flightNumber = flightId.substring(2);
-
-            // 根据航空公司代码推测常见航线
-            const commonRoutes = {
-                'CZ': [['PEK', 'SHA'], ['PEK', 'CAN'], ['SHA', 'CAN']],
-                'CA': [['PEK', 'SHA'], ['PEK', 'PVG'], ['PEK', 'CAN']],
-                'MU': [['SHA', 'PEK'], ['PVG', 'PEK'], ['SHA', 'CAN']],
-                'FM': [['SHA', 'PEK'], ['PVG', 'CTU'], ['SHA', 'SZX']]
-            };
-
-            if (commonRoutes[airlineCode]) {
-                const routes = commonRoutes[airlineCode];
-                const routeIndex = parseInt(flightNumber) % routes.length;
-                [airportFrom, airportTo] = routes[routeIndex];
-                console.log('📝 根据航空公司推测航线:', airlineCode, airportFrom, '->', airportTo);
-            }
-        }
-
-        // 最后尝试用推测的机场信息搜索
-        console.log('📝 最后尝试用推测信息搜索航班');
-        try {
-            const searchResponse = await fetch('/api/flights/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    airportFrom: airportFrom,
-                    airportTo: airportTo,
-                    flightDate: formattedDate,
-                    userId: currentUser.userId
-                })
-            });
-
-            if (searchResponse.ok) {
-                const searchResult = await searchResponse.json();
-                if (searchResult.success && searchResult.data && searchResult.data.length > 0) {
-                    // 使用第一个找到的航班，并调整信息
-                    flightInfo = searchResult.data[0];
-                    flightInfo.flightId = flightId;
-                    flightInfo.flightrecordId = flightrecordId;
-                    flightInfo.flightDate = formattedDate;
-
-                    updateFlightDisplay();
-                    console.log('✅ 用推测信息搜索成功:', flightInfo);
-                    return;
-                }
-            }
-        } catch (e) {
-            console.warn('⚠️ 推测搜索失败:', e);
-        }
-
-        // 方法4: 如果所有方法都失败，创建默认航班信息
-        console.log('📝 所有搜索方法失败，创建默认航班信息');
-        createDefaultFlightInfo();
-        updateFlightDisplay();
-        console.log('✅ 使用默认航班信息:', flightInfo);
-
-    } catch (error) {
-        console.error('❌ 加载航班信息失败:', error);
-        // 创建默认信息作为最后的备选方案
-        createDefaultFlightInfo();
-        updateFlightDisplay();
-        throw new Error('加载航班信息失败，已使用默认信息：' + error.message);
-    }
-}
-
-// 创建默认航班信息
-function createDefaultFlightInfo() {
-    const flightId = flightrecordId.substring(0, flightrecordId.length - 8);
-    const flightDate = flightrecordId.substring(flightrecordId.length - 8);
-    const formattedDate = `${flightDate.substring(0,4)}-${flightDate.substring(4,6)}-${flightDate.substring(6,8)}`;
-
-    // 根据航班号推测航空公司
-    let airlineName = '中国南方航空';
-    const airlineCode = flightId.substring(0, 2);
-    const airlineNames = {
-        'CZ': '中国南方航空',
-        'CA': '中国国际航空',
-        'MU': '中国东方航空',
-        'FM': '上海航空',
-        '3U': '四川航空',
-        'HU': '海南航空',
-        'ZH': '深圳航空',
-        'SC': '山东航空'
-    };
-
-    if (airlineNames[airlineCode]) {
-        airlineName = airlineNames[airlineCode];
-    }
-
-    flightInfo = {
-        flightId: flightId,
-        flightrecordId: flightrecordId,
-        airlineName: airlineName,
-        airportFrom: 'PEK',
-        airportTo: 'SHA',
-        timeTakeoff: '08:30',
-        timeArrive: '11:15',
-        flightDate: formattedDate,
-        seat0Left: 50,  // 默认经济舱座位
-        seat1Left: 10   // 默认商务舱座位
-    };
-
-    console.log('📝 创建默认航班信息:', flightInfo);
-}
-
 // 加载价格信息
 async function loadPriceInfo() {
     try {
         console.log('💰 开始加载价格信息...');
 
-        // 并行获取经济舱和商务舱价格
-        const [economyResponse, businessResponse] = await Promise.all([
-            fetch(`/api/booking/price?flightrecordId=${encodeURIComponent(flightrecordId)}&seatType=0&userId=${encodeURIComponent(currentUser.userId)}`),
-            fetch(`/api/booking/price?flightrecordId=${encodeURIComponent(flightrecordId)}&seatType=1&userId=${encodeURIComponent(currentUser.userId)}`)
-        ]);
-
-        // 处理经济舱价格
-        if (economyResponse.ok) {
-            const economyData = await economyResponse.json();
-            if (economyData.success) {
-                priceInfo.economy.price = economyData.price;
-                console.log('✅ 经济舱价格:', economyData.price);
-            } else {
-                console.warn('⚠️ 获取经济舱价格失败:', economyData.message);
-                priceInfo.economy.price = 500; // 默认价格
-            }
-        } else {
-            console.warn('⚠️ 经济舱价格API调用失败');
-            priceInfo.economy.price = 500;
+        if (!flightInfo) {
+            throw new Error('航班信息未加载，无法获取价格');
         }
 
-        // 处理商务舱价格
-        if (businessResponse.ok) {
-            const businessData = await businessResponse.json();
-            if (businessData.success) {
-                priceInfo.business.price = businessData.price;
-                console.log('✅ 商务舱价格:', businessData.price);
-            } else {
-                console.warn('⚠️ 获取商务舱价格失败:', businessData.message);
-                priceInfo.business.price = 1200; // 默认价格
-            }
-        } else {
-            console.warn('⚠️ 商务舱价格API调用失败');
-            priceInfo.business.price = 1200;
-        }
+        // 从API返回的航班信息中提取价格信息
+        priceInfo.economy.price = flightInfo.finalPrice0 || 0;
+        priceInfo.business.price = flightInfo.finalPrice1 || 0;
 
-        // 检查VIP折扣
-        if (flightInfo && flightInfo.hasDiscount && currentUser.vipState === '是') {
-            priceInfo.economy.originalPrice = flightInfo.originalPrice0 || priceInfo.economy.price;
-            priceInfo.business.originalPrice = flightInfo.originalPrice1 || priceInfo.business.price;
+        // 处理VIP折扣信息
+        if (flightInfo.hasDiscount && flightInfo.isVipUser) {
+            priceInfo.economy.originalPrice = flightInfo.originalPrice0 || flightInfo.finalPrice0;
+            priceInfo.business.originalPrice = flightInfo.originalPrice1 || flightInfo.finalPrice1;
             priceInfo.economy.hasDiscount = true;
             priceInfo.business.hasDiscount = true;
+
             console.log('🎉 检测到VIP折扣');
+        } else {
+            priceInfo.economy.hasDiscount = false;
+            priceInfo.business.hasDiscount = false;
         }
 
         // 更新价格显示
@@ -430,9 +270,13 @@ async function loadPriceInfo() {
 
     } catch (error) {
         console.error('❌ 加载价格信息失败:', error);
-        // 使用默认价格
+
+        // 如果价格信息加载失败，使用默认价格
         priceInfo.economy.price = 500;
         priceInfo.business.price = 1200;
+        priceInfo.economy.hasDiscount = false;
+        priceInfo.business.hasDiscount = false;
+
         updatePriceDisplay();
         throw new Error('加载价格信息失败：' + error.message);
     }
@@ -442,122 +286,191 @@ async function loadPriceInfo() {
 function displayUserInfo() {
     if (!currentUser) return;
 
-    document.getElementById('passengerName').value = currentUser.userName || '';
-    document.getElementById('passengerPhone').value = currentUser.userTelephone || '';
-    document.getElementById('userId').value = currentUser.userId || '';
-    document.getElementById('vipStatus').value = currentUser.vipState === '是' ? 'VIP会员' : '普通会员';
+    const elements = {
+        passengerName: currentUser.userName || '',
+        passengerPhone: currentUser.userTelephone || '',
+        userId: currentUser.userId || '',
+        vipStatus: currentUser.vipState === '是' ? 'VIP会员' : '普通会员'
+    };
+
+    // 更新表单元素
+    Object.keys(elements).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.value = elements[id];
+        }
+    });
 
     // 显示VIP状态
     if (currentUser.vipState === '是') {
-        const vipBadge = document.createElement('span');
-        vipBadge.className = 'vip-badge';
-        vipBadge.innerHTML = '<i class="fa fa-crown"></i> VIP会员';
-        document.getElementById('vipBadgeContainer').appendChild(vipBadge);
+        const vipBadgeContainer = document.getElementById('vipBadgeContainer');
+        if (vipBadgeContainer && !vipBadgeContainer.querySelector('.vip-badge')) {
+            const vipBadge = document.createElement('span');
+            vipBadge.className = 'vip-badge';
+            vipBadge.innerHTML = '<i class="fa fa-crown"></i> VIP会员';
+            vipBadgeContainer.appendChild(vipBadge);
+        }
 
         // 显示VIP折扣信息
         const discountInfo = document.getElementById('vipDiscountInfo');
-        discountInfo.innerHTML = '<div class="discount-info"><i class="fa fa-star"></i> 恭喜！作为VIP会员，您将享受专属优惠价格</div>';
-        discountInfo.style.display = 'block';
+        if (discountInfo) {
+            discountInfo.innerHTML = '<div class="discount-info"><i class="fa fa-star"></i> 恭喜！作为VIP会员，您将享受专属优惠价格</div>';
+            discountInfo.style.display = 'block';
+        }
     }
 }
 
 // 更新航班信息显示
 function updateFlightDisplay() {
-    if (!flightInfo) return;
+    if (!flightInfo) {
+        console.warn('⚠️ 航班信息为空，无法更新显示');
+        return;
+    }
 
     console.log('🖼️ 更新航班显示:', flightInfo);
 
-    document.getElementById('flightNumber').textContent = flightInfo.flightId;
-    document.getElementById('airlineName').textContent = flightInfo.airlineName;
-    document.getElementById('departureCode').textContent = flightInfo.airportFrom;
-    document.getElementById('departureName').textContent = getAirportName(flightInfo.airportFrom);
-    document.getElementById('arrivalCode').textContent = flightInfo.airportTo;
-    document.getElementById('arrivalName').textContent = getAirportName(flightInfo.airportTo);
-    document.getElementById('departureTime').textContent = flightInfo.timeTakeoff;
-    document.getElementById('arrivalTime').textContent = flightInfo.timeArrive;
-    document.getElementById('flightDate').textContent = flightInfo.flightDate;
+    // 更新基本信息
+    const updates = {
+        flightNumber: flightInfo.flightId,
+        airlineName: flightInfo.airlineName,
+        departureCode: flightInfo.airportFrom,
+        departureName: getAirportName(flightInfo.airportFrom),
+        arrivalCode: flightInfo.airportTo,
+        arrivalName: getAirportName(flightInfo.airportTo),
+        departureTime: flightInfo.timeTakeoff,
+        arrivalTime: flightInfo.timeArrive,
+        flightDate: flightInfo.flightDate
+    };
 
-    // 计算飞行时长
-    const duration = calculateFlightDuration(flightInfo.timeTakeoff, flightInfo.timeArrive);
-    document.getElementById('flightDuration').textContent = duration;
+    Object.keys(updates).forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = updates[id];
+        }
+    });
 
-    // 更新座位可用性
+    // 计算并显示飞行时长
+    const durationElement = document.getElementById('flightDuration');
+    if (durationElement) {
+        const duration = calculateFlightDuration(flightInfo.timeTakeoff, flightInfo.timeArrive);
+        durationElement.textContent = duration;
+    }
+
+    // 更新座位信息
+    updateSeatDisplay();
+}
+
+// 更新座位显示
+function updateSeatDisplay() {
+    if (!flightInfo) return;
+
     const economySeats = parseInt(flightInfo.seat0Left) || 0;
     const businessSeats = parseInt(flightInfo.seat1Left) || 0;
 
     console.log('💺 座位信息 - 经济舱:', economySeats, '商务舱:', businessSeats);
 
-    document.getElementById('economyAvailability').textContent = `剩余 ${economySeats} 座位`;
-    document.getElementById('businessAvailability').textContent = `剩余 ${businessSeats} 座位`;
+    // 更新座位可用性文本
+    const economyAvailability = document.getElementById('economyAvailability');
+    const businessAvailability = document.getElementById('businessAvailability');
 
-    // 检查座位是否可选
+    if (economyAvailability) {
+        economyAvailability.textContent = economySeats > 0 ? `剩余 ${economySeats} 座位` : '座位已满';
+        economyAvailability.style.color = economySeats > 0 ? '#28a745' : '#e74c3c';
+    }
+
+    if (businessAvailability) {
+        businessAvailability.textContent = businessSeats > 0 ? `剩余 ${businessSeats} 座位` : '座位已满';
+        businessAvailability.style.color = businessSeats > 0 ? '#28a745' : '#e74c3c';
+    }
+
+    // 更新座位选项状态
     const economyOption = document.querySelector('[data-seat-type="0"]');
     const businessOption = document.querySelector('[data-seat-type="1"]');
 
-    // 重置状态
-    economyOption.classList.remove('disabled');
-    businessOption.classList.remove('disabled');
-    economyOption.onclick = () => selectSeat(0);
-    businessOption.onclick = () => selectSeat(1);
-
-    // 检查经济舱座位
-    if (economySeats <= 0) {
-        economyOption.classList.add('disabled');
-        economyOption.onclick = null;
-        document.getElementById('economyAvailability').textContent = '座位已满';
-        document.getElementById('economyAvailability').style.color = '#e74c3c';
-        console.log('❌ 经济舱座位已满');
-    } else {
-        document.getElementById('economyAvailability').style.color = '#28a745';
-        console.log('✅ 经济舱座位可用:', economySeats);
+    if (economyOption) {
+        economyOption.classList.remove('disabled');
+        if (economySeats <= 0) {
+            economyOption.classList.add('disabled');
+            economyOption.onclick = null;
+        } else {
+            economyOption.onclick = () => selectSeat(0);
+        }
     }
 
-    // 检查商务舱座位
-    if (businessSeats <= 0) {
-        businessOption.classList.add('disabled');
-        businessOption.onclick = null;
-        document.getElementById('businessAvailability').textContent = '座位已满';
-        document.getElementById('businessAvailability').style.color = '#e74c3c';
-        console.log('❌ 商务舱座位已满');
-    } else {
-        document.getElementById('businessAvailability').style.color = '#28a745';
-        console.log('✅ 商务舱座位可用:', businessSeats);
+    if (businessOption) {
+        businessOption.classList.remove('disabled');
+        if (businessSeats <= 0) {
+            businessOption.classList.add('disabled');
+            businessOption.onclick = null;
+        } else {
+            businessOption.onclick = () => selectSeat(1);
+        }
     }
 }
 
 // 更新价格显示
 function updatePriceDisplay() {
     // 更新座位选项中的价格
-    document.getElementById('economyPrice').textContent = '¥' + priceInfo.economy.price;
-    document.getElementById('businessPrice').textContent = '¥' + priceInfo.business.price;
+    const economyPriceElement = document.getElementById('economyPrice');
+    const businessPriceElement = document.getElementById('businessPrice');
+
+    if (economyPriceElement) {
+        economyPriceElement.textContent = '¥' + priceInfo.economy.price;
+    }
+    if (businessPriceElement) {
+        businessPriceElement.textContent = '¥' + priceInfo.business.price;
+    }
 
     // 更新当前选中座位的价格汇总
+    updatePriceSummary();
+
+    // 更新预订按钮状态
+    updateBookButton();
+}
+
+// 更新价格汇总
+function updatePriceSummary() {
     const currentPrice = selectedSeatType === 0 ? priceInfo.economy.price : priceInfo.business.price;
     const hasDiscount = selectedSeatType === 0 ? priceInfo.economy.hasDiscount : priceInfo.business.hasDiscount;
     const originalPrice = selectedSeatType === 0 ? priceInfo.economy.originalPrice : priceInfo.business.originalPrice;
 
-    document.getElementById('ticketPrice').textContent = '¥' + currentPrice;
-    document.getElementById('totalPrice').textContent = '¥' + currentPrice;
+    // 更新主要价格显示
+    const ticketPriceElement = document.getElementById('ticketPrice');
+    const totalPriceElement = document.getElementById('totalPrice');
 
-    // 显示折扣信息
+    if (ticketPriceElement) ticketPriceElement.textContent = '¥' + currentPrice;
+    if (totalPriceElement) totalPriceElement.textContent = '¥' + currentPrice;
+
+    // 显示/隐藏折扣信息
+    const originalPriceRow = document.getElementById('originalPriceRow');
+    const discountRow = document.getElementById('discountRow');
+
     if (hasDiscount && originalPrice && originalPrice > currentPrice) {
-        document.getElementById('originalPriceRow').style.display = 'flex';
-        document.getElementById('discountRow').style.display = 'flex';
-        document.getElementById('originalPrice').textContent = '¥' + originalPrice;
-        document.getElementById('discountAmount').textContent = '-¥' + (originalPrice - currentPrice);
-        document.getElementById('discountAmount').style.color = '#28a745';
-    } else {
-        document.getElementById('originalPriceRow').style.display = 'none';
-        document.getElementById('discountRow').style.display = 'none';
-    }
+        if (originalPriceRow) {
+            originalPriceRow.style.display = 'flex';
+            const originalPriceElement = document.getElementById('originalPrice');
+            if (originalPriceElement) originalPriceElement.textContent = '¥' + originalPrice;
+        }
 
-    // 启用预订按钮
-    updateBookButton();
+        if (discountRow) {
+            discountRow.style.display = 'flex';
+            const discountAmountElement = document.getElementById('discountAmount');
+            if (discountAmountElement) {
+                discountAmountElement.textContent = '-¥' + (originalPrice - currentPrice);
+                discountAmountElement.style.color = '#28a745';
+            }
+        }
+    } else {
+        if (originalPriceRow) originalPriceRow.style.display = 'none';
+        if (discountRow) discountRow.style.display = 'none';
+    }
 }
 
 // 更新预订按钮状态
 function updateBookButton() {
     const bookBtn = document.getElementById('bookBtn');
+    if (!bookBtn) return;
+
     if (!flightInfo) {
         bookBtn.disabled = true;
         bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 加载中...';
@@ -591,13 +504,13 @@ function selectSeat(seatType) {
 
     if (!flightInfo) {
         console.warn('⚠️ 航班信息未加载完成');
+        showMessage('航班信息未加载完成，请稍后再试', 'error');
         return;
     }
 
     // 检查座位是否可用
     const economySeats = parseInt(flightInfo.seat0Left) || 0;
     const businessSeats = parseInt(flightInfo.seat1Left) || 0;
-
     const isAvailable = (seatType === 0 && economySeats > 0) ||
         (seatType === 1 && businessSeats > 0);
 
@@ -627,7 +540,7 @@ function selectSeat(seatType) {
     }
 
     // 更新价格显示
-    updatePriceDisplay();
+    updatePriceSummary();
 
     const seatTypeName = seatType === 0 ? '经济舱' : '商务舱';
     console.log('✅ 选择座位类型:', seatTypeName);
@@ -733,10 +646,10 @@ function showLoading(show) {
     const bookBtn = document.getElementById('bookBtn');
 
     if (show) {
-        loadingDiv.style.display = 'block';
-        bookBtn.disabled = true;
+        if (loadingDiv) loadingDiv.style.display = 'block';
+        if (bookBtn) bookBtn.disabled = true;
     } else {
-        loadingDiv.style.display = 'none';
+        if (loadingDiv) loadingDiv.style.display = 'none';
         updateBookButton();
     }
 }
@@ -744,6 +657,8 @@ function showLoading(show) {
 // 显示消息
 function showMessage(message, type = 'info') {
     const container = document.getElementById('messageContainer');
+    if (!container) return;
+
     const messageDiv = document.createElement('div');
 
     let className = 'info-message';
@@ -773,18 +688,20 @@ function showMessage(message, type = 'info') {
     }
 
     // 滚动到消息位置
-    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    try {
+        messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) {
+        // 兼容性处理
+        messageDiv.scrollIntoView();
+    }
 }
 
 // 清除消息
 function clearMessages() {
-    document.getElementById('messageContainer').innerHTML = '';
-}
-
-// 检查是否为有效的机场代码
-function isValidAirportCode(code) {
-    const validCodes = ['PEK', 'SHA', 'PVG', 'CAN', 'SZX', 'CTU', 'KMG', 'XIY', 'HGH', 'NKG', 'TSN', 'WUH'];
-    return validCodes.includes(code);
+    const container = document.getElementById('messageContainer');
+    if (container) {
+        container.innerHTML = '';
+    }
 }
 
 // 获取机场名称
@@ -809,6 +726,8 @@ function getAirportName(code) {
 // 计算飞行时长
 function calculateFlightDuration(takeoffTime, arriveTime) {
     try {
+        if (!takeoffTime || !arriveTime) return '未知';
+
         const [takeoffHour, takeoffMin] = takeoffTime.split(':').map(Number);
         const [arriveHour, arriveMin] = arriveTime.split(':').map(Number);
 
@@ -826,6 +745,7 @@ function calculateFlightDuration(takeoffTime, arriveTime) {
 
         return `${hours}小时${minutes}分钟`;
     } catch (error) {
+        console.error('计算飞行时长失败:', error);
         return '计算中...';
     }
 }
