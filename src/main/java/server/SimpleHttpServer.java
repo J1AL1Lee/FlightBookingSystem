@@ -42,6 +42,7 @@ import handler.SimpleFlightSearchHandler;
 import handler.BookingHandler;
 import handler.PaymentCreateHandler;
 import handler.ResourceBasedStaticHandler;
+import handler.AddFlightHandler;
 
 
 public class SimpleHttpServer {
@@ -69,6 +70,10 @@ public class SimpleHttpServer {
         server.createContext("/api/booking/price", new BookingHandler());
         server.createContext("/api/booking/orders", new BookingHandler());
 
+        //管理员路径
+        server.createContext("/api/admin/flight/add", new AddFlightHandler());
+        //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
+        //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
 
 
         //主方法中的新路由，支付相关，by黄
