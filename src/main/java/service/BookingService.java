@@ -220,11 +220,72 @@ public class BookingService {
     }
 
     /**
-     * 生成座位号
+     * 生成座位ID - 按座位余量依次分配
+     * @param flightrecordId 航班记录ID
+     * @param seatType 座位类型（0经济舱，1商务舱）
+     * @return 座位ID（数字），从1开始依次分配
      */
-    public Integer generateSeatNumber() {
-        // 简单实现：随机生成1-200的座位号
-        return new Random().nextInt(200) + 1;
+    public Integer generateSeatId(String flightrecordId, Integer seatType) {
+        try {
+            System.out.println("🪑 开始生成座位ID: 航班记录=" + flightrecordId + ", 座位类型=" +
+                    (seatType == 0 ? "经济舱" : "商务舱"));
+
+            // 1. 获取航班记录信息
+            Flightrecord flightrecord = FlightrecordDao.findById(flightrecordId);
+            if (flightrecord == null) {
+                System.err.println("❌ 航班记录不存在: " + flightrecordId);
+                return null;
+            }
+
+            // 2. 获取航班基础信息（座位容量）
+            Flight flight = flightSearchService.getFlightById(flightrecord.getFlightId());
+            if (flight == null) {
+                System.err.println("❌ 航班信息不存在: " + flightrecord.getFlightId());
+                return null;
+            }
+
+            // 3. 计算座位分配信息
+            int totalCapacity;    // 总座位数
+            int leftSeats;        // 剩余座位数
+
+            if (seatType == 0) {
+                // 经济舱
+                totalCapacity = flight.getSeat0Capacity();
+                leftSeats = flightrecord.getSeat0Left();
+            } else {
+                // 商务舱
+                totalCapacity = flight.getSeat1Capacity();
+                leftSeats = flightrecord.getSeat1Left();
+            }
+
+            // 4. 计算下一个应分配的座位ID
+            int assignedSeats = totalCapacity - leftSeats;  // 已分配座位数
+            int nextSeatId = assignedSeats + 1;             // 下一个座位ID
+
+            // 5. 验证座位分配的合理性
+            if (nextSeatId > totalCapacity) {
+                System.err.println("❌ 座位分配异常: 下一个座位ID(" + nextSeatId +
+                        ") > 总容量(" + totalCapacity + ")");
+                return null;
+            }
+
+            if (leftSeats <= 0) {
+                System.err.println("❌ 座位已满: 剩余座位=" + leftSeats);
+                return null;
+            }
+
+            System.out.println("✅ 座位ID生成成功: " + nextSeatId +
+                    " (总容量=" + totalCapacity +
+                    ", 剩余=" + leftSeats +
+                    ", 已分配=" + assignedSeats + ")");
+
+            return nextSeatId;
+
+        } catch (Exception e) {
+            System.err.println("❌ 生成座位ID失败: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -239,14 +300,21 @@ public class BookingService {
                 return null;
             }
 
+            // 生成座位ID
+            Integer seatId = generateSeatId(flightrecordId, seatType);
+            if (seatId == null) {
+                System.err.println("❌ 生成座位ID失败");
+                return null;
+            }
+
             Order order = new Order();
             order.setOrderId(orderId);
             order.setUserId(userId);
             order.setFlightId(record.getFlightId());
-            order.setOrderState("未支付");
+            order.setOrderState("已支付");  // 直接设为已支付
             order.setFlightTime(record.getFlightDate());
             order.setOrderTime(LocalDateTime.now());
-            order.setSeatId(generateSeatNumber());
+            order.setSeatId(seatId);  // 使用生成的座位ID
             order.setSeatType(seatType);
 
             System.out.println("📝 订单对象创建成功: " + order.toString());
