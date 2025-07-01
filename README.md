@@ -1,101 +1,153 @@
-```
-flight-booking-system/
-├── 📄 pom.xml                                    # Maven配置文件
-├── 📄 README.md                                  # 项目说明文档
-├── 📄 .gitignore                                 # Git忽略配置
-├── 📁 src/
-│   ├── 📁 main/
-│   │   ├── 📁 java/
-│   │   │   ├── 📄 FlightBookingMain.java         # 🚀 系统启动类
-│   │   │   ├── 📁 server/                        # 🌐 HTTP服务器层
-│   │   │   │   ├── 📄 FlightHttpServer.java      # HTTP服务器
-│   │   │   │   └── 📄 FlightRequestHandler.java  # 请求处理器
-│   │   │   ├── 📁 model/                         # 📊 实体类层
-│   │   │   │   ├── 📄 User.java                  # 用户实体
-│   │   │   │   ├── 📄 Flight.java                # 航班实体
-│   │   │   │   ├── 📄 FlightSchedule.java        # 航程实体
-│   │   │   │   ├── 📄 Order.java                 # 订单实体
-│   │   │   │   ├── 📄 Payment.java               # 支付实体
-│   │   │   │   ├── 📄 Seat.java                  # 座位实体
-│   │   │   │   ├── 📄 Airport.java               # 机场实体
-│   │   │   │   └── 📄 Airlinecompany.java        # 航空公司实体
-│   │   │   ├── 📁 dao/                           # 🗄️ 数据访问层
-│   │   │   │   ├── 📄 DatabaseConnection.java    # 数据库连接管理
-│   │   │   │   ├── 📄 UserDao.java               # 用户数据访问
-│   │   │   │   ├── 📄 FlightDao.java             # 航班数据访问
-│   │   │   │   ├── 📄 FlightScheduleDao.java     # 航程数据访问
-│   │   │   │   ├── 📄 OrderDao.java              # 订单数据访问
-│   │   │   │   ├── 📄 PaymentDao.java            # 支付数据访问
-│   │   │   │   ├── 📄 SeatDao.java               # 座位数据访问
-│   │   │   │   └── 📄 AirportDao.java            # 机场数据访问
-│   │   │   ├── 📁 service/                       # 🔧 业务逻辑层（可选）
-│   │   │   │   ├── 📄 FlightSearchService.java   # 航班搜索服务
-│   │   │   │   ├── 📄 BookingService.java        # 订票服务
-│   │   │   │   └── 📄 PaymentService.java        # 支付服务
-│   │   │   ├── 📁 utils/                         # 🛠️ 工具类层
-│   │   │   │   ├── 📄 JsonUtil.java              # JSON工具
-│   │   │   │   ├── 📄 OrderNumberGenerator.java  # 订单号生成器
-│   │   │   │   ├── 📄 DateUtil.java              # 日期工具
-│   │   │   │   ├── 📄 ValidationUtil.java        # 验证工具
-│   │   │   │   └── 📄 ResponseUtil.java          # 响应工具
-│   │   │   └── 📁 exception/                     # ⚠️ 异常处理层
-│   │   │       ├── 📄 FlightBookingException.java # 业务异常
-│   │   │       ├── 📄 DatabaseException.java     # 数据库异常
-│   │   │       └── 📄 PaymentException.java      # 支付异常
-│   │   └── 📁 resources/
-│   │       ├── 📁 static/                        # 🌐 静态资源
-│   │       │   ├── 📄 index.html                 # 首页
-│   │       │   ├── 📄 booking.html               # 订票页面
-│   │       │   ├── 📄 search.html                # 搜索页面
-│   │       │   ├── 📄 orders.html                # 订单页面
-│   │       │   ├── 📁 css/
-│   │       │   │   ├── 📄 style.css              # 主样式
-│   │       │   │   └── 📄 booking.css            # 订票样式
-│   │       │   ├── 📁 js/
-│   │       │   │   ├── 📄 main.js                # 主脚本
-│   │       │   │   ├── 📄 booking.js             # 订票脚本
-│   │       │   │   └── 📄 api.js                 # API调用
-│   │       │   └── 📁 images/
-│   │       │       ├── 📄 logo.png               # 系统Logo
-│   │       │       └── 📄 plane.svg              # 飞机图标
-│   │       ├── 📁 sql/                           # 🗄️ SQL脚本
-│   │       │   ├── 📄 create_database.sql        # 建库脚本
-│   │       │   ├── 📄 create_tables.sql          # 建表脚本
-│   │       │   ├── 📄 init_data.sql              # 初始数据
-│   │       │   └── 📄 sample_data.sql            # 示例数据
-│   │       └── 📄 application.properties         # 配置文件
-│   └── 📁 test/
-│       ├── 📁 java/
-│       │   ├── 📄 FlightBookingTest.java         # 系统测试
-│       │   ├── 📁 dao/
-│       │   │   ├── 📄 UserDaoTest.java           # 用户DAO测试
-│       │   │   ├── 📄 FlightDaoTest.java         # 航班DAO测试
-│       │   │   └── 📄 OrderDaoTest.java          # 订单DAO测试
-│       │   ├── 📁 service/
-│       │   │   ├── 📄 BookingServiceTest.java    # 订票服务测试
-│       │   │   └── 📄 PaymentServiceTest.java    # 支付服务测试
-│       │   └── 📁 utils/
-│       │       ├── 📄 JsonUtilTest.java          # JSON工具测试
-│       │       └── 📄 OrderGeneratorTest.java    # 订单生成测试
-│       └── 📁 resources/
-│           └── 📄 test.properties                # 测试配置
-├── 📁 docs/                                     # 📚 文档目录
-│   ├── 📄 API.md                                 # API文档
-│   ├── 📄 DATABASE.md                            # 数据库设计文档
-│   ├── 📄 DEPLOYMENT.md                          # 部署文档
-│   └── 📁 images/
-│       ├── 📄 architecture.png                   # 架构图
-│       └── 📄 database_schema.png                # 数据库ER图
-├── 📁 scripts/                                  # 🔧 脚本目录
-│   ├── 📄 start.sh                               # 启动脚本（Linux/Mac）
-│   ├── 📄 start.bat                              # 启动脚本（Windows）
-│   ├── 📄 build.sh                               # 构建脚本
-│   └── 📄 deploy.sh                              # 部署脚本
-└── 📁 target/                                   # 🎯 Maven构建输出
-    ├── 📁 classes/                               # 编译后的class文件
-    ├── 📁 test-classes/                          # 测试class文件
-    └── 📄 flight-booking-system-1.0.0-jar-with-dependencies.jar  # 可执行JAR包
+# 🛠️ 项目结构
 
+```
+FlightBookingSystem/
+├── 📄 pom.xml                                # Maven项目配置文件
+├── 📄 README.md                              # 项目说明文档
+├── 📄 .gitignore                             # Git版本控制忽略配置
+│
+└── 📁 src/                                   # 源代码目录
+    └── 📁 main/                             # 主程序代码
+        └── 📁 java/                         # Java源代码
+            │
+            ├── 📁 dao/                      # 🗄️ 数据访问对象层
+            │   ├── 📄 AirlinecompanyDao.java    # 航空公司数据访问
+            │   ├── 📄 AirlinecompanyDaoTest.java # 航空公司DAO测试
+            │   ├── 📄 DatabaseConnection.java    # 数据库连接管理
+            │   ├── 📄 FlightDao.java             # 航班数据访问
+            │   ├── 📄 FlightrecordDao.java       # 航班记录数据访问
+            │   ├── 📄 OrderDao.java              # 订单数据访问
+            │   ├── 📄 PayrecordDao.java          # 支付记录数据访问
+            │   └── 📄 UserDao.java               # 用户数据访问
+            │
+            ├── 📁 model/                    # 📊 数据实体层
+            │   ├── 📄 Airlinecompany.java        # 航空公司实体
+            │   ├── 📄 Airport.java               # 机场实体
+            │   ├── 📄 Flight.java                # 航班实体
+            │   ├── 📄 Flightrecord.java          # 航班记录实体
+            │   ├── 📄 Luggage.java               # 行李实体
+            │   ├── 📄 Order.java                 # 订单实体
+            │   ├── 📄 Payrecord.java             # 支付记录实体
+            │   └── 📄 User.java                  # 用户实体
+            │
+            ├── 📁 org.example/              # 📦 主程序包
+            │
+            ├── 📁 server/                   # 🌐 HTTP服务器层
+            │   └── 📄 SimpleHttpServer.java     # 简单HTTP服务器实现
+            │
+            ├── 📁 service/                  # 🔧 业务逻辑服务层
+            │   ├── 📄 AlipayService.java         # 支付宝支付服务
+            │   ├── 📄 BookingService.java        # 航班预订服务
+            │   └── 📄 FlightSearchService.java   # 航班搜索服务
+            │
+            ├── 📁 test/                     # 🧪 测试类
+            │   └── 📄 AlipayTest.java            # 支付宝测试
+            │
+            └── 📁 utils/                    # 🛠️ 工具类库
+                ├── 📄 JsonUtil.java              # JSON处理工具
+                └── 📄 Main.java                  # 主启动类
+        │
+        └── 📁 resources/                    # 📦 资源文件目录
+            ├── 📁 sql/                      # 🗄️ 数据库脚本
+            │   ├── 📄 create_table.sql          # 数据表创建脚本
+            │   └── 📄 data.sql                  # 初始化数据脚本
+            │
+            └── 📁 static/                   # 🌐 静态Web资源
+                ├── 📁 css/                      # 样式表文件目录
+                ├── 📁 images/                   # 图片资源目录
+                ├── 📁 js/                       # JavaScript脚本目录
+                ├── 📁 可复用html代码/             # HTML模板代码
+                │
+                ├── 📄 admin.html                # 管理员页面
+                ├── 📄 booking.html              # 航班预订页面
+                ├── 📄 booking_demo.html         # 预订演示页面
+                ├── 📄 main.html                 # 系统主页
+                ├── 📄 payment.html              # 支付页面
+                ├── 📄 personal.html             # 个人中心页面
+                ├── 📄 search.html               # 航班搜索页面
+                ├── 📄 search_demo.html          # 搜索演示页面
+                ├── 📄 sign_log.html             # 登录注册页面
+                └── 📄 test.js                   # 测试脚本
+    │
+    └── 📁 test/                             # 🧪 测试代码目录
+        ├── 📁 java/                         # Java测试代码
+        └── 📁 resources/                    # 测试资源文件
+│
+├── 📁 target/                               # 🎯 Maven构建输出目录
+│   ├── 📁 classes/                          # 编译后的字节码文件
+│   └── 📁 generated-sources/                # 生成的源代码
+│
+├── 📄 .gitignore                            # Git忽略配置文件
+├── 📄 Alipay_uasage.md                      # 支付宝使用说明文档
+├── 📄 pom.xml                               # Maven项目配置文件
+└── 📄 qrcode.png                            # 项目二维码图片
+```
+
+## 🏗️ 架构层次说明
+
+### 1. **数据访问层 (DAO Layer)**
+- `dao/` - 8个DAO类，负责数据库CRUD操作
+- 包含数据库连接管理和各实体的数据访问接口
+
+### 2. **数据模型层 (Model Layer)**
+- `model/` - 8个实体类，对应数据库表结构
+- 定义核心业务对象：用户、航班、订单、支付等
+
+### 3. **业务服务层 (Service Layer)**
+- `service/` - 3个核心服务类
+- 封装业务逻辑：搜索、预订、支付
+
+### 4. **服务器层 (Server Layer)**
+- `server/` - HTTP服务器实现
+- 处理HTTP请求和响应
+
+### 5. **工具层 (Utils Layer)**
+- `utils/` - 通用工具类
+- JSON处理和系统启动入口
+
+## 🔧 核心组件详情
+
+| 层级 | 组件数量 | 主要文件 |
+|------|---------|----------|
+| **DAO层** | 8个 | UserDao, FlightDao, OrderDao, PayrecordDao等 |
+| **Model层** | 8个 | User, Flight, Order, Payrecord, Airport等 |
+| **Service层** | 3个 | BookingService, FlightSearchService, AlipayService |
+| **Server层** | 1个 | SimpleHttpServer |
+| **Utils层** | 2个 | JsonUtil, Main |
+| **前端页面** | 9个 | 完整的用户界面，包含搜索、预订、支付等功能 |
+| **数据库脚本** | 2个 | 建表脚本和初始化数据 |
+| **测试类** | 2个 | AirlinecompanyDaoTest, AlipayTest |
+
+## 📦 技术特点
+
+- **纯Java实现** - 不依赖Spring等框架，轻量级架构
+- **分层架构** - DAO-Model-Service-Server清晰分层
+- **完整前端** - 9个HTML页面覆盖全业务流程
+- **支付集成** - 集成支付宝支付服务，含使用文档
+- **JSON支持** - 自研JSON处理工具
+- **数据库支持** - 完整的SQL建表和数据脚本
+- **演示页面** - 提供demo版本便于测试和展示
+
+## 🎯 页面功能
+
+| 页面 | 功能描述 |
+|------|----------|
+| **main.html** | 系统首页，导航和功能入口 |
+| **search.html / search_demo.html** | 航班搜索页面和演示版本 |
+| **booking.html / booking_demo.html** | 航班预订页面和演示版本 |
+| **payment.html** | 支付页面，支持支付宝 |
+| **personal.html** | 个人中心，订单管理 |
+| **admin.html** | 管理员后台管理 |
+| **sign_log.html** | 用户登录注册 |
+
+## 🚀 启动方式
+
+```bash
+# 编译项目
+mvn clean compile
+
+# 运行主程序
+java -cp target/classes utils.Main
 ```
 
 ## 📋 关键文件说明

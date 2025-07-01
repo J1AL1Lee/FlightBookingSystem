@@ -1,0 +1,158 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7"
+                refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+        </marker>
+
+        <!-- 渐变定义 -->
+        <linearGradient id="userGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#45a049;stop-opacity:1" />
+        </linearGradient>
+
+        <linearGradient id="processGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1976D2;stop-opacity:1" />
+        </linearGradient>
+
+        <linearGradient id="storeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FF9800;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#F57C00;stop-opacity:1" />
+        </linearGradient>
+
+        <linearGradient id="externalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#9C27B0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7B1FA2;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <!-- 背景 -->
+    <rect width="1200" height="800" fill="#f8f9fa"/>
+
+    <!-- 标题 -->
+    <text x="600" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">
+        航空订票系统 - 主要数据流图 (DFD Level 0)
+    </text>
+
+    <!-- 外部实体 - 用户 -->
+    <rect x="50" y="150" width="120" height="80" rx="10" fill="url(#userGrad)" stroke="#333" stroke-width="2"/>
+    <text x="110" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">用户</text>
+    <text x="110" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">(乘客)</text>
+
+    <!-- 外部实体 - 管理员 -->
+    <rect x="50" y="350" width="120" height="80" rx="10" fill="url(#userGrad)" stroke="#333" stroke-width="2"/>
+    <text x="110" y="385" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">管理员</text>
+    <text x="110" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">(系统管理)</text>
+
+    <!-- 外部实体 - 支付系统 -->
+    <rect x="1000" y="250" width="120" height="80" rx="10" fill="url(#externalGrad)" stroke="#333" stroke-width="2"/>
+    <text x="1060" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">支付系统</text>
+    <text x="1060" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">(第三方)</text>
+
+    <!-- 中央处理系统 -->
+    <circle cx="600" cy="300" r="100" fill="url(#processGrad)" stroke="#333" stroke-width="3"/>
+    <text x="600" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">航空订票</text>
+    <text x="600" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">系统</text>
+    <text x="600" y="325" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">0</text>
+
+    <!-- 数据存储 -->
+    <rect x="300" y="550" width="150" height="40" rx="5" fill="url(#storeGrad)" stroke="#333" stroke-width="2"/>
+    <text x="375" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">D1: 用户信息</text>
+
+    <rect x="480" y="550" width="150" height="40" rx="5" fill="url(#storeGrad)" stroke="#333" stroke-width="2"/>
+    <text x="555" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">D2: 航班信息</text>
+
+    <rect x="660" y="550" width="150" height="40" rx="5" fill="url(#storeGrad)" stroke="#333" stroke-width="2"/>
+    <text x="735" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">D3: 订单信息</text>
+
+    <rect x="840" y="550" width="150" height="40" rx="5" fill="url(#storeGrad)" stroke="#333" stroke-width="2"/>
+    <text x="915" y="575" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">D4: 支付记录</text>
+
+    <!-- 数据流 - 用户相关 -->
+    <!-- 用户登录注册 -->
+    <path d="M 170 180 Q 300 180 500 250" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="280" y="200" font-family="Arial, sans-serif" font-size="10" fill="#333">登录/注册请求</text>
+
+    <path d="M 520 270 Q 350 200 170 200" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="280" y="230" font-family="Arial, sans-serif" font-size="10" fill="#333">登录结果</text>
+
+    <!-- 航班搜索 -->
+    <path d="M 170 160 Q 400 120 550 200" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="350" y="140" font-family="Arial, sans-serif" font-size="10" fill="#333">航班搜索条件</text>
+
+    <path d="M 570 210 Q 400 140 170 170" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="350" y="160" font-family="Arial, sans-serif" font-size="10" fill="#333">航班搜索结果</text>
+
+    <!-- 订票流程 -->
+    <path d="M 170 210 Q 350 280 500 300" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="300" y="270" font-family="Arial, sans-serif" font-size="10" fill="#333">订票请求</text>
+
+    <path d="M 520 320 Q 350 300 170 220" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="300" y="320" font-family="Arial, sans-serif" font-size="10" fill="#333">订票确认</text>
+
+    <!-- 管理员相关 -->
+    <path d="M 170 380 Q 350 380 500 350" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="300" y="370" font-family="Arial, sans-serif" font-size="10" fill="#333">航班管理操作</text>
+
+    <path d="M 520 370 Q 350 400 170 400" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="300" y="410" font-family="Arial, sans-serif" font-size="10" fill="#333">操作结果</text>
+
+    <!-- 支付相关 -->
+    <path d="M 700 280 Q 850 280 1000 280" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="820" y="270" font-family="Arial, sans-serif" font-size="10" fill="#333">支付请求</text>
+
+    <path d="M 1000 300 Q 850 300 700 300" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="820" y="320" font-family="Arial, sans-serif" font-size="10" fill="#333">支付结果</text>
+
+    <!-- 系统与数据存储的交互 -->
+    <!-- 用户信息存储 -->
+    <path d="M 550 380 Q 450 480 375 550" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="440" y="470" font-family="Arial, sans-serif" font-size="10" fill="#333">用户数据</text>
+
+    <path d="M 395 550 Q 470 480 570 380" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="460" y="490" font-family="Arial, sans-serif" font-size="10" fill="#333">用户信息</text>
+
+    <!-- 航班信息存储 -->
+    <path d="M 580 390 Q 580 480 555 550" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="590" y="470" font-family="Arial, sans-serif" font-size="10" fill="#333">航班更新</text>
+
+    <path d="M 575 550 Q 590 480 600 390" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="610" y="490" font-family="Arial, sans-serif" font-size="10" fill="#333">航班查询</text>
+
+    <!-- 订单信息存储 -->
+    <path d="M 620 390 Q 680 480 735 550" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="690" y="470" font-family="Arial, sans-serif" font-size="10" fill="#333">订单创建</text>
+
+    <path d="M 715 550 Q 660 480 610 390" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="640" y="490" font-family="Arial, sans-serif" font-size="10" fill="#333">订单查询</text>
+
+    <!-- 支付记录存储 -->
+    <path d="M 650 380 Q 780 480 915 550" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="780" y="470" font-family="Arial, sans-serif" font-size="10" fill="#333">支付记录</text>
+
+    <path d="M 895 550 Q 760 480 630 380" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+    <text x="740" y="490" font-family="Arial, sans-serif" font-size="10" fill="#333">支付查询</text>
+
+    <!-- 图例 -->
+    <g transform="translate(50, 650)">
+        <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#333">图例:</text>
+
+        <rect x="0" y="15" width="80" height="30" rx="5" fill="url(#userGrad)" stroke="#333" stroke-width="1"/>
+        <text x="40" y="33" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">外部实体</text>
+
+        <circle cx="140" cy="30" r="20" fill="url(#processGrad)" stroke="#333" stroke-width="1"/>
+        <text x="140" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">处理</text>
+
+        <rect x="190" y="15" width="80" height="30" rx="5" fill="url(#storeGrad)" stroke="#333" stroke-width="1"/>
+        <text x="230" y="33" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">数据存储</text>
+
+        <path d="M 300 30 L 350 30" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+        <text x="375" y="35" font-family="Arial, sans-serif" font-size="10" fill="#333">数据流</text>
+    </g>
+
+    <!-- 系统边界 -->
+    <rect x="250" y="100" width="700" height="420" rx="20" fill="none" stroke="#666" stroke-width="2" stroke-dasharray="10,5"/>
+    <text x="600" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-style="italic" fill="#666">系统边界</text>
+
+</svg>
