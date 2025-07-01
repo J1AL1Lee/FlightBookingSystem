@@ -15,6 +15,20 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePage();
 });
 
+// 在页面加载完成后添加这个检查
+document.addEventListener('DOMContentLoaded', function() {
+    const bookBtn = document.getElementById('bookBtn');
+    console.log('🔍 预订按钮元素:', bookBtn);
+
+    if (bookBtn) {
+        // 检查是否已有点击事件
+        bookBtn.addEventListener('click', function() {
+            console.log('🎯 预订按钮被点击了！');
+            confirmBooking();
+        });
+    }
+});
+
 // 初始化页面
 async function initializePage() {
     try {
@@ -548,6 +562,8 @@ function selectSeat(seatType) {
 
 // 确认预订
 async function confirmBooking() {
+    console.log('🔍 selectedSeatType 类型和值:', typeof selectedSeatType, selectedSeatType);
+    console.log('🔍 parseInt(selectedSeatType):', parseInt(selectedSeatType));
     if (!currentUser || !flightInfo) {
         showMessage('用户信息或航班信息丢失，请重新登录', 'error');
         return;
@@ -604,7 +620,7 @@ async function confirmBooking() {
             body: JSON.stringify({
                 flightrecordId: flightrecordId,
                 userId: currentUser.userId,
-                seatType: selectedSeatType
+                seatType: Number(selectedSeatType)
             })
         });
 

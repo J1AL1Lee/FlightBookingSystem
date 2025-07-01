@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title>订单信息</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <!-- style css -->
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <!-- Responsive-->
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- fevicon -->
+    <link rel="icon" href="images/fevicon.png" type="image/gif" />
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
+    <!-- Tweaks for older IEs-->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+    <!-- owl stylesheets -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+    <!-- booking specific css -->
+    <link rel="stylesheet" type="text/css" href="css/booking.css">
+</head>
+<body>
+<!-- header section start -->
+<div class="header_section">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="logo"><a href="main.html"><img src="images/logo.png"></a></div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <a class="nav-item nav-link" href="main.html">主页</a>
+                <a class="nav-item nav-link" href="search.html">航班查询</a>
+                <a class="nav-item nav-link" href="booking.html">订单管理</a>
+                <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
+                <a class="nav-item nav-link" href="admin.html" id="admin-page">管理员操作</a>
+            </div>
+        </nav>
+    </div>
+</div>
+<!-- header section end -->
+
+<!-- 订单详细信息部分 -->
+<div class="booking-container">
+    <!-- 页面标题 -->
+    <div class="booking-header">
+        <div class="booking-title">订单详细信息</div>
+    </div>
+
+    <!-- 订单信息卡片 -->
+    <div class="flight-info-card">
+        <div class="card-title">
+            <i class="fa fa-plane"></i>
+            订单信息
+        </div>
+
+        <!-- 订单详情 -->
+        <div class="flight-details">
+            <div class="detail-item">
+                <div class="detail-label">订单号</div>
+                <div class="detail-value" id="order-id">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">航班号</div>
+                <div class="detail-value" id="order-flight">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">出发城市</div>
+                <div class="detail-value" id="order-from">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">到达城市</div>
+                <div class="detail-value" id="order-to">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">出发时间</div>
+                <div class="detail-value" id="order-date">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">订单状态</div>
+                <div class="detail-value" id="order-status">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">订单价格</div>
+                <div class="detail-value" id="order-price">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">乘客信息</div>
+                <div class="detail-value" id="order-passengers">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">座位类型</div>
+                <div class="detail-value" id="order-seat">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">行李信息</div>
+                <div class="detail-value" id="order-baggage">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">联系信息</div>
+                <div class="detail-value" id="order-contact">加载中...</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">座位号</div>
+                <div class="detail-value" id="order-seat-number">加载中...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 返回操作按钮 -->
+<div class="booking-actions">
+    <button class="btn-cancel" onclick="window.location.href='main.html'">
+        <i class="fa fa-arrow-left"></i> 返回主页
+    </button>
+</div>
+
+<!-- Javascript files-->
+<script src="js/jquery.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/jquery-3.0.0.min.js"></script>
+<script src="js/plugin.js"></script>
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/custom.js"></script>
+<script src="js/owl.carousel.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+<script>
+    $(document).ready(function(){
+        var orderId = getOrderId();
+        $.ajax({
+            url: "get_order_info.php",
+            type: "POST",
+            data: {orderId: orderId},
+            success: function(data){
+                var orderInfo = JSON.parse(data);
+                console.log(orderInfo);
+                $("#order-id").text(orderInfo.orderId);
+                $("#order-date").text(orderInfo.orderDate);
+                $("#order-status").text(orderInfo.orderStatus);
+                $("#order-price").text(orderInfo.orderPrice);
+                $("#order-flight").text(orderInfo.flightNumber);
+                $("#order-from").text(orderInfo.fromCity);
+                $("#order-to").text(orderInfo.toCity);
+                $("#order-passengers").text(orderInfo.passengers);
+                $("#order-seat").text(orderInfo.seatType);
+                $("#order-baggage").text(orderInfo.baggage);
+                $("#order-contact").text(orderInfo.contact);
+
+                // 生成随机座位号
+                var seatNumber = generateSeatNumber();
+                $("#order-seat-number").text(seatNumber);
+            }
+        });
+    });
+
+    function generateSeatNumber() {
+        var letters = 'ABCDEF';
+        var letter = letters[Math.floor(Math.random() * letters.length)];
+        var number = Math.floor(100 * Math.random()).toString().padStart(2, '0');
+        return letter + number;
+    }
+
+    function getOrderId() {
+        // 假设订单ID通过URL参数传递
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('orderId');
+    }
+</script>
+</body>
+</html>

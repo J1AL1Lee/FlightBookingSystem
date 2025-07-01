@@ -41,6 +41,7 @@ import handler.TestHandler;
 import handler.SimpleFlightSearchHandler;
 import handler.BookingHandler;
 import handler.PaymentCreateHandler;
+import handler.SimplePaymentCreateHandler; // 🆕 添加新的简化支付处理器
 import handler.ResourceBasedStaticHandler;
 
 
@@ -68,10 +69,14 @@ public class SimpleHttpServer {
         server.createContext("/api/booking/cancel", new BookingHandler());
         server.createContext("/api/booking/price", new BookingHandler());
         server.createContext("/api/booking/orders", new BookingHandler());
+        server.createContext("/api/booking/refund", new BookingHandler()); // 🆕 添加退款路由
 
+        // 🆕 支付相关路由 - 简化版本（不依赖支付宝）
+        server.createContext("/api/simplepay/create", new SimplePaymentCreateHandler());
+        server.createContext("/api/simplepay/callback", new SimplePaymentCreateHandler());
+        server.createContext("/api/simplepay/query", new SimplePaymentCreateHandler());
 
-
-        //主方法中的新路由，支付相关，by黄
+        //主方法中的新路由，支付相关，by黄 - 保留原有支付宝API
         server.createContext("/api/payments/create", new PaymentCreateHandler());
         server.createContext("/api/payments/status", new PaymentStatusHandler());
         server.createContext("/api/payments/notify", new PaymentNotifyHandler());
@@ -87,9 +92,21 @@ public class SimpleHttpServer {
         System.out.println("📍 当前工作目录: " + System.getProperty("user.dir"));
         System.out.println("📍 尝试读取: src/main/resources/static/sign_log.html");
 
-        System.out.println("📍 支付宝 API 可用:");
-        System.out.println("   POST /api/payments/create - 发起支付");
-        System.out.println("   GET /api/payments/status - 查询支付状态");
+        System.out.println("📍 订票相关 API:");
+        System.out.println("   POST /api/booking/create - 创建订单（自动创建支付记录）");
+        System.out.println("   POST /api/booking/cancel - 取消订单");
+        System.out.println("   POST /api/booking/refund - 申请退款");
+        System.out.println("   GET /api/booking/price - 查询价格");
+        System.out.println("   GET /api/booking/orders - 查询用户订单");
+
+        System.out.println("📍 简化支付 API:");
+        System.out.println("   POST /api/simplepay/create - 创建支付记录");
+        System.out.println("   POST /api/simplepay/callback - 支付回调处理");
+        System.out.println("   POST /api/simplepay/query - 查询支付状态");
+
+        System.out.println("📍 支付宝 API (原有功能):");
+        System.out.println("   POST /api/payments/create - 发起支付宝支付");
+        System.out.println("   GET /api/payments/status - 查询支付宝支付状态");
         System.out.println("   POST /api/payments/notify - 接收支付宝通知");
 
         System.out.println("按 Ctrl+C 停止服务器");
