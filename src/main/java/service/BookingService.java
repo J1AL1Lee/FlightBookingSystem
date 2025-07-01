@@ -17,8 +17,11 @@ public class BookingService {
     private FlightSearchService flightSearchService = new FlightSearchService();
     private UserDao userDao = new UserDao();
 
+    // 🆕 添加 PaymentService
+    private PaymentService paymentService = new PaymentService();
+
     /**
-     * 创建订单主流程
+     * 创建订单主流程（原版本 - 直接设为已支付）
      * @param flightrecordId 航班记录ID
      * @param userId 用户ID
      * @param seatType 座位类型（0经济舱，1商务舱）
@@ -60,6 +63,20 @@ public class BookingService {
             try {
                 String savedOrderId = orderDao.save(order);
                 System.out.println("✅ 订单创建成功: " + savedOrderId);
+
+                // 🆕 6. 创建支付记录（因为订单状态直接设为已支付，所以同时创建支付记录）
+                Integer orderPrice = calculateOrderPrice(flightrecordId, seatType, userId);
+                if (orderPrice != null) {
+                    String paymentId = paymentService.createPayment(savedOrderId, orderPrice, "在线支付");
+                    if (paymentId != null) {
+                        // 直接处理为支付成功
+                        paymentService.processPaymentSuccess(paymentId);
+                        System.out.println("💳 支付记录创建并处理成功: " + paymentId);
+                    } else {
+                        System.err.println("⚠️ 支付记录创建失败，但订单已创建");
+                    }
+                }
+
                 return savedOrderId;
             } catch (Exception e) {
                 // 保存失败，释放座位
@@ -71,6 +88,115 @@ public class BookingService {
         } catch (Exception e) {
             System.err.println("❌ 创建订单异常: " + e.getMessage());
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 🆕 创建订单（分步版本 - 先创建订单，后支付）
+     */
+    public String createBookingWithoutPayment(String flightrecordId, String userId, Integer seatType) {
+        System.out.println("🎫 开始创建订单（待支付）: 用户=" + userId + ", 航班记录=" + flightrecordId + ", 座位类型=" + seatType);
+
+        try {
+            // 验证、检查、锁定座位（同原逻辑）
+            if (!validateBookingParams(flightrecordId, userId, seatType) ||
+                    !checkSeatAvailability(flightrecordId, seatType) ||
+                    !lockSeat(flightrecordId, seatType)) {
+                return null;
+            }
+
+            // 生成订单
+            String orderId = generateUniqueOrderId();
+            Order order = createOrderObjectWithoutPayment(orderId, flightrecordId, userId, seatType);
+
+            if (order == null) {
+                releaseSeat(flightrecordId, seatType);
+                return null;
+            }
+
+            // 保存订单
+            String savedOrderId = orderDao.save(order);
+            System.out.println("✅ 订单创建成功（待支付）: " + savedOrderId);
+            return savedOrderId;
+
+        } catch (Exception e) {
+            System.err.println("❌ 创建订单异常: " + e.getMessage());
+            releaseSeat(flightrecordId, seatType);
+            return null;
+        }
+    }
+
+    /**
+     * 🆕 为订单创建支付
+     */
+    public String payForOrder(String orderId, String userId, String payMethod) {
+        try {
+            // 验证订单
+            Order order = orderDao.findById(orderId);
+            if (order == null || !order.getUserId().equals(userId)) {
+                System.err.println("❌ 订单验证失败");
+                return null;
+            }
+
+            if (!"未支付".equals(order.getOrderState())) {
+                System.err.println("❌ 订单状态错误: " + order.getOrderState());
+                return null;
+            }
+
+            // 计算支付金额
+            String flightrecordId = findFlightRecordId(order.getFlightId(), order.getFlightTime());
+            Integer amount = calculateOrderPrice(flightrecordId, order.getSeatType(), userId);
+            if (amount == null) {
+                System.err.println("❌ 计算支付金额失败");
+                return null;
+            }
+
+            // 创建支付记录
+            String paymentId = paymentService.createPayment(orderId, amount, payMethod);
+            System.out.println("💳 支付记录创建: " + paymentId);
+            return paymentId;
+
+        } catch (Exception e) {
+            System.err.println("❌ 订单支付失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 🆕 申请退款
+     */
+    public String requestRefund(String orderId, String userId, String reason) {
+        try {
+            // 验证订单
+            Order order = orderDao.findById(orderId);
+            if (order == null || !order.getUserId().equals(userId)) {
+                System.err.println("❌ 订单验证失败");
+                return null;
+            }
+
+            if (!"已支付".equals(order.getOrderState())) {
+                System.err.println("❌ 订单状态不允许退款: " + order.getOrderState());
+                return null;
+            }
+
+            // 申请退款
+            String refundId = paymentService.requestRefund(orderId, reason);
+            if (refundId != null) {
+                System.out.println("💰 退款申请成功: " + refundId);
+
+                // 释放座位
+                String flightrecordId = findFlightRecordId(order.getFlightId(), order.getFlightTime());
+                if (flightrecordId != null) {
+                    releaseSeat(flightrecordId, order.getSeatType());
+                    System.out.println("🪑 座位已释放");
+                }
+            }
+
+            return refundId;
+
+        } catch (Exception e) {
+            System.err.println("❌ 申请退款失败: " + e.getMessage());
             return null;
         }
     }
@@ -212,11 +338,11 @@ public class BookingService {
      * 生成订单ID
      */
     private String generateOrderId() {
-        // 格式：年月日 + 4位随机数，如：20251229XXXX
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // 🔧 修改为8位格式：月日 + 4位随机数，如：07014523
+        String monthDay = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMdd"));
         Random random = new Random();
         String randomNum = String.format("%04d", random.nextInt(10000));
-        return date + randomNum;
+        return monthDay + randomNum;
     }
 
     /**
@@ -289,7 +415,7 @@ public class BookingService {
     }
 
     /**
-     * 创建订单对象
+     * 创建订单对象（原版本 - 直接设为已支付）
      */
     private Order createOrderObject(String orderId, String flightrecordId, String userId, Integer seatType) {
         try {
@@ -311,13 +437,51 @@ public class BookingService {
             order.setOrderId(orderId);
             order.setUserId(userId);
             order.setFlightId(record.getFlightId());
-            order.setOrderState("已支付");  // 直接设为已支付
+            order.setOrderState("正常");  // 保持原有逻辑 - 直接设为已支付
             order.setFlightTime(record.getFlightDate());
             order.setOrderTime(LocalDateTime.now());
             order.setSeatId(seatId);  // 使用生成的座位ID
             order.setSeatType(seatType);
 
             System.out.println("📝 订单对象创建成功: " + order.toString());
+            return order;
+
+        } catch (Exception e) {
+            System.err.println("❌ 创建订单对象失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 🆕 创建订单对象（未支付版本）
+     */
+    private Order createOrderObjectWithoutPayment(String orderId, String flightrecordId, String userId, Integer seatType) {
+        try {
+            // 获取航班记录获取flightId和日期
+            Flightrecord record = FlightrecordDao.findById(flightrecordId);
+            if (record == null) {
+                System.err.println("❌ 无法获取航班记录");
+                return null;
+            }
+
+            // 生成座位ID
+            Integer seatId = generateSeatId(flightrecordId, seatType);
+            if (seatId == null) {
+                System.err.println("❌ 生成座位ID失败");
+                return null;
+            }
+
+            Order order = new Order();
+            order.setOrderId(orderId);
+            order.setUserId(userId);
+            order.setFlightId(record.getFlightId());
+            order.setOrderState("未支付");  // 设为未支付状态
+            order.setFlightTime(record.getFlightDate());
+            order.setOrderTime(LocalDateTime.now());
+            order.setSeatId(seatId);  // 使用生成的座位ID
+            order.setSeatType(seatType);
+
+            System.out.println("📝 订单对象创建成功（未支付）: " + order.toString());
             return order;
 
         } catch (Exception e) {
@@ -361,7 +525,7 @@ public class BookingService {
     }
 
     /**
-     * 取消订单
+     * 取消订单（保持原有逻辑，🆕 添加支付记录处理）
      */
     public boolean cancelOrder(String orderId, String userId) {
         System.out.println("🚫 开始取消订单: " + orderId);
@@ -385,7 +549,19 @@ public class BookingService {
                 return false;
             }
 
-            // 3. 释放座位
+            // 🆕 3. 处理支付记录
+            try {
+                if (paymentService.getPaymentByOrderId(orderId) != null) {
+                    String paymentId = paymentService.getPaymentByOrderId(orderId).getPayId();
+                    paymentService.cancelPayment(paymentId);
+                    System.out.println("💳 支付记录已取消");
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ 取消支付记录时出错: " + e.getMessage());
+                // 不影响订单取消流程，继续执行
+            }
+
+            // 4. 释放座位
             String flightrecordId = findFlightRecordId(order.getFlightId(), order.getFlightTime());
             if (flightrecordId != null) {
                 releaseSeat(flightrecordId, order.getSeatType());
@@ -393,7 +569,7 @@ public class BookingService {
                 System.err.println("⚠️ 找不到对应的航班记录，无法释放座位");
             }
 
-            // 4. 删除订单
+            // 5. 删除订单
             boolean success = orderDao.deleteOrder(orderId);
             if (success) {
                 System.out.println("✅ 订单取消成功: " + orderId);
@@ -456,5 +632,30 @@ public class BookingService {
             System.err.println("❌ 确认订单失败: " + e.getMessage());
             return false;
         }
+    }
+
+    // 🆕 新增方法：获取订单的支付信息
+    public String getOrderPaymentInfo(String orderId, String userId) {
+        try {
+            // 验证订单归属
+            Order order = orderDao.findById(orderId);
+            if (order == null || !order.getUserId().equals(userId)) {
+                System.err.println("❌ 订单验证失败");
+                return null;
+            }
+
+            // 获取支付记录
+            return paymentService.getPaymentByOrderId(orderId) != null ?
+                    paymentService.getPaymentByOrderId(orderId).getPayId() : null;
+
+        } catch (Exception e) {
+            System.err.println("❌ 获取订单支付信息失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // 🆕 获取 PaymentService 实例（供外部调用支付相关功能）
+    public PaymentService getPaymentService() {
+        return paymentService;
     }
 }
