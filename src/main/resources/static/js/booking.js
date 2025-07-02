@@ -9,24 +9,42 @@ let priceInfo = {
     business: { price: 0, originalPrice: 0, hasDiscount: false }
 };
 
-// 页面加载时执行
+// 🔧 添加防重复提交的标志
+let isBookingInProgress = false;
+
+// 页面加载时执行 - 🎯 合并到一个事件监听器
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 页面加载完成，开始初始化...');
-    initializePage();
-});
 
-// 在页面加载完成后添加这个检查
-document.addEventListener('DOMContentLoaded', function() {
+    // 🔧 绑定预订按钮事件（只绑定一次）
     const bookBtn = document.getElementById('bookBtn');
-    console.log('🔍 预订按钮元素:', bookBtn);
-
     if (bookBtn) {
-        // 检查是否已有点击事件
-        bookBtn.addEventListener('click', function() {
+        // 🎯 移除可能存在的旧事件监听器
+        bookBtn.removeEventListener('click', confirmBooking);
+
+        // 🎯 绑定新的事件监听器
+        bookBtn.addEventListener('click', function(event) {
+            event.preventDefault(); // 防止表单提交
+            event.stopPropagation(); // 阻止事件冒泡
+
             console.log('🎯 预订按钮被点击了！');
+
+            // 🔧 防重复提交检查
+            if (isBookingInProgress) {
+                console.log('⚠️ 预订正在进行中，忽略重复点击');
+                return;
+            }
+
             confirmBooking();
         });
+
+        console.log('✅ 预订按钮事件绑定完成');
+    } else {
+        console.error('❌ 未找到预订按钮元素');
     }
+
+    // 初始化页面
+    initializePage();
 });
 
 // 初始化页面
@@ -503,9 +521,12 @@ function updateBookButton() {
         hasAvailableSeats
     });
 
-    if (hasAvailableSeats) {
+    if (hasAvailableSeats && !isBookingInProgress) {
         bookBtn.disabled = false;
         bookBtn.innerHTML = '<i class="fa fa-check"></i> 确认预订';
+    } else if (isBookingInProgress) {
+        bookBtn.disabled = true;
+        bookBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
     } else {
         bookBtn.disabled = true;
         bookBtn.innerHTML = '<i class="fa fa-ban"></i> 座位已满';
@@ -560,10 +581,19 @@ function selectSeat(seatType) {
     console.log('✅ 选择座位类型:', seatTypeName);
 }
 
-// 确认预订
+// 🔧 确认预订 - 添加防重复提交机制
 async function confirmBooking() {
+    console.log('🎯 开始确认预订流程...');
+
+    // 🔧 防重复提交检查
+    if (isBookingInProgress) {
+        console.log('⚠️ 预订正在进行中，忽略重复请求');
+        return;
+    }
+
     console.log('🔍 selectedSeatType 类型和值:', typeof selectedSeatType, selectedSeatType);
     console.log('🔍 parseInt(selectedSeatType):', parseInt(selectedSeatType));
+
     if (!currentUser || !flightInfo) {
         showMessage('用户信息或航班信息丢失，请重新登录', 'error');
         return;
@@ -606,6 +636,9 @@ async function confirmBooking() {
         return;
     }
 
+    // 🔧 设置预订进行中标志
+    isBookingInProgress = true;
+
     // 显示加载状态
     showLoading(true);
 
@@ -645,6 +678,8 @@ async function confirmBooking() {
         console.error('❌ 预订请求异常:', error);
         showMessage('预订失败，请检查网络连接后重试', 'error');
     } finally {
+        // 🔧 重置预订进行中标志
+        isBookingInProgress = false;
         showLoading(false);
     }
 }
