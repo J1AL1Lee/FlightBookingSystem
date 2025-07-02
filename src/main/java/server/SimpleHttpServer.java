@@ -60,6 +60,11 @@ public class SimpleHttpServer {
         server.createContext("/api/booking/orders", new BookingHandler());
         server.createContext("/api/booking/refund", new BookingHandler());
 
+        //管理员路径
+        server.createContext("/api/admin/flight/add", new AddFlightHandler());
+        //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
+        //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
+
         // 主支付相关路由，使用支付宝
         server.createContext("/api/payments/create", new PaymentCreateHandler());
         server.createContext("/api/payments/status", new PaymentStatusHandler());
@@ -266,6 +271,42 @@ public class SimpleHttpServer {
                 System.err.println("❌ 支付通知处理失败: " + e.getMessage());
                 sendJsonResponse(exchange, 500, createErrorResponse("通知处理失败: " + e.getMessage()));
             }
+        }
+    }
+
+    // 扩展支付相关路由和二维码服务
+    private static void extendPaymentRoutes(HttpServer server) {
+        try {
+            AlipayConfig config = new AlipayConfig();
+            config.setServerUrl("https://openapi-sandbox.dl.alipaydev.com/gateway.do");
+            config.setAppId("9021000149697288");
+            config.setPrivateKey("your_private_key"); // 替换为实际私钥
+            config.setAlipayPublicKey("your_alipay_public_key"); // 替换为实际公钥
+            config.setCharset("UTF-8");
+            config.setSignType("RSA2");
+            AlipayClient alipayClient = new DefaultAlipayClient(config);
+
+            server.createContext("/api/payments/cancel", new PaymentCancelHandler(alipayClient, new PayrecordDao()));
+            server.createContext("/qrcode", new HttpHandler() {
+                @Override
+                public void handle(HttpExchange exchange) throws IOException {
+                    String path = exchange.getRequestURI().getPath().substring(1); // 移除前缀 /qrcode
+                    File file = new File(path + ".png");
+                    if (file.exists()) {
+                        byte[] bytes = Files.readAllBytes(file.toPath());
+                        exchange.getResponseHeaders().set("Content-Type", "image/png");
+                        exchange.sendResponseHeaders(200, bytes.length);
+                        try (OutputStream os = exchange.getResponseBody()) {
+                            os.write(bytes);
+                        }
+                    } else {
+                        sendJsonResponse(exchange, 404, createErrorResponse("二维码图片未找到"));
+                    }
+                }
+            });
+            System.out.println("📍 扩展支付宝支付 API: /api/payments/cancel, /qrcode");
+        } catch (AlipayApiException e) {
+            System.err.println("❌ 支付宝初始化失败: " + e.getMessage());
         }
     }
 }

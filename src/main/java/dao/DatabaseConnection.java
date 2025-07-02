@@ -17,7 +17,7 @@ public class DatabaseConnection {
             "zeroDateTimeBehavior=convertToNull";
 
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "123456"; // 改成你的实际密码
+    private static final String PASSWORD = "@F2025"; // 改成你的实际密码
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USERNAME, PASSWORD);
