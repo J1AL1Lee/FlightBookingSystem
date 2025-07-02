@@ -155,6 +155,12 @@ public class SimpleHttpServer {
         return error;
     }
 
+    public void stop(int i) {
+    }
+
+    public void start() {
+    }
+
     // 支付状态查询处理器
     static class PaymentStatusHandler implements HttpHandler {
         private PayrecordDao payrecordDao = new PayrecordDao();
