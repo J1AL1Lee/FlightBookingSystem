@@ -8,9 +8,9 @@ import dao.UserDao;
 import model.User;
 import service.FlightSearchService;
 import utils.JsonUtil;
-import java.nio.file.Files;      // 添加这个
-import java.nio.file.Path;       // 添加这个
-import java.nio.file.Paths;      // 添加这个
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -33,17 +33,7 @@ import dao.OrderDao;
 import dao.PayrecordDao;
 import model.Order;
 import model.Payrecord;
-import handler.RegisterHandler;
-import handler.LoginHandler;
-import handler.UsersHandler;
-import handler.HelloHandler;
-import handler.TestHandler;
-import handler.SimpleFlightSearchHandler;
-import handler.BookingHandler;
-import handler.PaymentCreateHandler;
-import handler.SimplePaymentCreateHandler; // 🆕 添加新的简化支付处理器
-import handler.ResourceBasedStaticHandler;
-
+import handler.*;
 
 public class SimpleHttpServer {
 
@@ -61,22 +51,16 @@ public class SimpleHttpServer {
         server.createContext("/api/users", new UsersHandler());
         server.createContext("/hello", new HelloHandler());
         server.createContext("/test", new TestHandler());
-        // 添加简化的航班搜索路由
         server.createContext("/api/flights/search", new SimpleFlightSearchHandler());
 
-        // 🎫 添加预订相关路由 - 新增部分
+        // 🎫 添加预订相关路由
         server.createContext("/api/booking/create", new BookingHandler());
         server.createContext("/api/booking/cancel", new BookingHandler());
         server.createContext("/api/booking/price", new BookingHandler());
         server.createContext("/api/booking/orders", new BookingHandler());
-        server.createContext("/api/booking/refund", new BookingHandler()); // 🆕 添加退款路由
+        server.createContext("/api/booking/refund", new BookingHandler());
 
-        // 🆕 支付相关路由 - 简化版本（不依赖支付宝）
-        server.createContext("/api/simplepay/create", new SimplePaymentCreateHandler());
-        server.createContext("/api/simplepay/callback", new SimplePaymentCreateHandler());
-        server.createContext("/api/simplepay/query", new SimplePaymentCreateHandler());
-
-        //主方法中的新路由，支付相关，by黄 - 保留原有支付宝API
+        // 主支付相关路由，使用支付宝
         server.createContext("/api/payments/create", new PaymentCreateHandler());
         server.createContext("/api/payments/status", new PaymentStatusHandler());
         server.createContext("/api/payments/notify", new PaymentNotifyHandler());
@@ -93,35 +77,19 @@ public class SimpleHttpServer {
         System.out.println("📍 尝试读取: src/main/resources/static/sign_log.html");
 
         System.out.println("📍 订票相关 API:");
-        System.out.println("   POST /api/booking/create - 创建订单（自动创建支付记录）");
+        System.out.println("   POST /api/booking/create - 创建订单");
         System.out.println("   POST /api/booking/cancel - 取消订单");
         System.out.println("   POST /api/booking/refund - 申请退款");
         System.out.println("   GET /api/booking/price - 查询价格");
         System.out.println("   GET /api/booking/orders - 查询用户订单");
 
-        System.out.println("📍 简化支付 API:");
-        System.out.println("   POST /api/simplepay/create - 创建支付记录");
-        System.out.println("   POST /api/simplepay/callback - 支付回调处理");
-        System.out.println("   POST /api/simplepay/query - 查询支付状态");
-
-        System.out.println("📍 支付宝 API (原有功能):");
-        System.out.println("   POST /api/payments/create - 发起支付宝支付");
-        System.out.println("   GET /api/payments/status - 查询支付宝支付状态");
+        System.out.println("📍 支付宝支付 API:");
+        System.out.println("   POST /api/payments/create - 发起支付（生成二维码）");
+        System.out.println("   GET /api/payments/status - 查询支付状态");
         System.out.println("   POST /api/payments/notify - 接收支付宝通知");
 
         System.out.println("按 Ctrl+C 停止服务器");
     }
-
-
-
-// 还需要添加 File 的 import
-// 在文件顶部添加：
-
-
-
-
-
-
 
     // 工具方法 - 设置CORS头
     public static void setCorsHeaders(HttpExchange exchange) {
@@ -131,16 +99,10 @@ public class SimpleHttpServer {
     }
 
     // 工具方法 - 读取请求体
-    // 修改readRequestBody方法，确保使用UTF-8
-    // 修改readRequestBody方法，强制处理UTF-8
-    // 简化的readRequestBody方法
-    // 修改SimpleHttpServer.java中的readRequestBody方法
     public static String readRequestBody(HttpExchange exchange) throws IOException {
-        // 尝试从Content-Type头获取字符集
         String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
         System.out.println("🔍 Content-Type: " + contentType);
 
-        // 读取原始字节
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         try (InputStream is = exchange.getRequestBody()) {
             byte[] data = new byte[1024];
@@ -153,20 +115,17 @@ public class SimpleHttpServer {
         byte[] bodyBytes = buffer.toByteArray();
         System.out.println("🔍 原始字节数组: " + Arrays.toString(bodyBytes));
 
-        // 尝试不同的字符编码
         String utf8Body = new String(bodyBytes, StandardCharsets.UTF_8);
         String iso88591Body = new String(bodyBytes, StandardCharsets.ISO_8859_1);
 
         System.out.println("🔍 UTF-8解码: " + utf8Body);
         System.out.println("🔍 ISO-8859-1解码: " + iso88591Body);
 
-        // 检测哪个解码结果包含正确的中文
         if (utf8Body.contains("userName") && !utf8Body.contains("��")) {
             System.out.println("✅ 使用UTF-8解码");
             return utf8Body;
         } else if (iso88591Body.contains("userName")) {
             System.out.println("✅ 使用ISO-8859-1解码，需要重新编码为UTF-8");
-            // 重新编码：ISO-8859-1字节 -> UTF-8字符串
             return new String(iso88591Body.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
         } else {
             System.out.println("⚠️ 使用默认UTF-8解码");
@@ -174,11 +133,9 @@ public class SimpleHttpServer {
         }
     }
 
-    // 修改sendJsonResponse方法
+    // 工具方法 - 发送JSON响应
     public static void sendJsonResponse(HttpExchange exchange, int code, Object data) throws IOException {
         String json = data instanceof String ? (String) data : JsonUtil.toJson(data);
-
-        // 确保使用UTF-8编码
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
 
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
@@ -190,10 +147,15 @@ public class SimpleHttpServer {
         }
     }
 
+    // 工具方法 - 创建错误响应
+    public static Map<String, Object> createErrorResponse(String message) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("success", false);
+        error.put("message", message);
+        return error;
+    }
 
-
-
-    // 新增：支付状态查询处理器
+    // 支付状态查询处理器
     static class PaymentStatusHandler implements HttpHandler {
         private PayrecordDao payrecordDao = new PayrecordDao();
         private AlipayClient alipayClient;
@@ -210,7 +172,7 @@ public class SimpleHttpServer {
                 this.alipayClient = new DefaultAlipayClient(config);
             } catch (AlipayApiException e) {
                 System.err.println("❌ 支付宝客户端初始化失败: " + e.getMessage());
-                throw new RuntimeException("支付宝客户端初始化失败", e); // 转换为 RuntimeException
+                throw new RuntimeException("支付宝客户端初始化失败", e);
             }
         }
 
@@ -261,7 +223,7 @@ public class SimpleHttpServer {
         }
     }
 
-    // 新增：支付通知处理器
+    // 支付通知处理器
     static class PaymentNotifyHandler implements HttpHandler {
         private PayrecordDao payrecordDao = new PayrecordDao();
 
@@ -300,14 +262,4 @@ public class SimpleHttpServer {
             }
         }
     }
-
-    // 工具方法 - 创建错误响应
-    public static Map<String, Object> createErrorResponse(String message) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("success", false);
-        error.put("message", message);
-        return error;
-    }
-
-
 }
