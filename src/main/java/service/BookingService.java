@@ -653,6 +653,182 @@ public class BookingService {
             return null;
         }
     }
+    /**
+     * 🆕 创建未支付状态的订单（为 BookingHandler 新流程服务）
+     * @param flightrecordId 航班记录ID
+     * @param userId 用户ID
+     * @param seatType 座位类型（0经济舱，1商务舱）
+     * @return 订单ID，失败返回null
+     */
+    public String createUnpaidBooking(String flightrecordId, String userId, Integer seatType) {
+        System.out.println("🎫 开始创建未支付订单: 用户=" + userId + ", 航班记录=" + flightrecordId + ", 座位类型=" + seatType);
+
+        try {
+            // 1. 验证参数
+            if (!validateBookingParams(flightrecordId, userId, seatType)) {
+                System.err.println("❌ 订票参数验证失败");
+                return null;
+            }
+
+            // 2. 检查座位余量
+            if (!checkSeatAvailability(flightrecordId, seatType)) {
+                System.err.println("❌ 座位不足，无法预订");
+                return null;
+            }
+
+            // 3. 锁定座位（减少余量）
+            if (!lockSeat(flightrecordId, seatType)) {
+                System.err.println("❌ 座位锁定失败，可能被其他用户抢购");
+                return null;
+            }
+
+            // 4. 生成订单ID
+            String orderId = generateUniqueOrderId();
+
+            // 5. 创建未支付订单对象
+            Order order = createUnpaidOrderObject(orderId, flightrecordId, userId, seatType);
+
+            if (order == null) {
+                // 创建订单对象失败，释放座位
+                releaseSeat(flightrecordId, seatType);
+                return null;
+            }
+
+            // 6. 保存订单
+            try {
+                String savedOrderId = orderDao.save(order);
+                System.out.println("✅ 未支付订单创建成功: " + savedOrderId);
+                return savedOrderId;
+            } catch (Exception e) {
+                // 保存失败，释放座位
+                System.err.println("❌ 保存订单失败，释放座位: " + e.getMessage());
+                releaseSeat(flightrecordId, seatType);
+                return null;
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ 创建未支付订单异常: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * 🆕 更新订单状态
+     * @param orderId 订单ID
+     * @param newStatus 新状态
+     * @return 是否更新成功
+     */
+    public boolean updateOrderStatus(String orderId, String newStatus) {
+        System.out.println("🔄 更新订单状态: " + orderId + " -> " + newStatus);
+
+        try {
+            // 1. 验证订单是否存在
+            Order order = orderDao.findById(orderId);
+            if (order == null) {
+                System.err.println("❌ 订单不存在: " + orderId);
+                return false;
+            }
+
+            // 2. 验证状态转换的合理性
+            String currentStatus = order.getOrderState();
+            if (!isValidStatusTransition(currentStatus, newStatus)) {
+                System.err.println("❌ 无效的状态转换: " + currentStatus + " -> " + newStatus);
+                return false;
+            }
+
+            // 3. 执行状态更新
+            boolean success = orderDao.updateOrderState(orderId, newStatus);
+
+            if (success) {
+                System.out.println("✅ 订单状态更新成功: " + orderId + " -> " + newStatus);
+            } else {
+                System.err.println("❌ 订单状态更新失败: " + orderId);
+            }
+
+            return success;
+
+        } catch (Exception e) {
+            System.err.println("❌ 更新订单状态异常: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 🆕 创建未支付订单对象
+     * @param orderId 订单ID
+     * @param flightrecordId 航班记录ID
+     * @param userId 用户ID
+     * @param seatType 座位类型
+     * @return 订单对象
+     */
+    private Order createUnpaidOrderObject(String orderId, String flightrecordId, String userId, Integer seatType) {
+        try {
+            // 获取航班记录获取flightId和日期
+            Flightrecord record = FlightrecordDao.findById(flightrecordId);
+            if (record == null) {
+                System.err.println("❌ 无法获取航班记录");
+                return null;
+            }
+
+            // 生成座位ID
+            Integer seatId = generateSeatId(flightrecordId, seatType);
+            if (seatId == null) {
+                System.err.println("❌ 生成座位ID失败");
+                return null;
+            }
+
+            Order order = new Order();
+            order.setOrderId(orderId);
+            order.setUserId(userId);
+            order.setFlightId(record.getFlightId());
+            order.setOrderState("未支付");  // 🎯 关键：设为未支付状态
+            order.setFlightTime(record.getFlightDate());
+            order.setOrderTime(LocalDateTime.now());
+            order.setSeatId(seatId);
+            order.setSeatType(seatType);
+
+            System.out.println("📝 未支付订单对象创建成功: " + order.toString());
+            return order;
+
+        } catch (Exception e) {
+            System.err.println("❌ 创建未支付订单对象失败: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 🆕 验证订单状态转换是否合理
+     * @param currentStatus 当前状态
+     * @param newStatus 新状态
+     * @return 是否为合理的状态转换
+     */
+    private boolean isValidStatusTransition(String currentStatus, String newStatus) {
+        // 定义合理的状态转换规则
+        switch (currentStatus) {
+            case "未支付":
+                // 未支付可以转换为：正常、已取消
+                return "正常".equals(newStatus) || "已取消".equals(newStatus);
+
+            case "正常":
+                // 正常可以转换为：已完成、已取消、已退款
+                return "已完成".equals(newStatus) || "已取消".equals(newStatus) || "已退款".equals(newStatus);
+
+            case "已完成":
+                // 已完成可以转换为：已退款
+                return "已退款".equals(newStatus);
+
+            case "已取消":
+            case "已退款":
+                // 已取消和已退款是终态，不能再转换
+                return false;
+
+            default:
+                System.err.println("❌ 未知的订单状态: " + currentStatus);
+                return false;
+        }
+    }
 
     // 🆕 获取 PaymentService 实例（供外部调用支付相关功能）
     public PaymentService getPaymentService() {

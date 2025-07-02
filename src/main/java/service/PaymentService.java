@@ -451,7 +451,7 @@ public class PaymentService {
             payrecord.setOrderId(orderId);
             payrecord.setPayment(amount);
             payrecord.setPayMethod(payMethod);
-            payrecord.setPayState("处理中");
+            payrecord.setPayState("已支付");
             payrecord.setPayTime(LocalDateTime.now());
 
             System.out.println("📝 支付对象创建成功: " + payrecord.toString());
@@ -496,11 +496,17 @@ public class PaymentService {
      * 生成支付ID
      */
     private String generatePayId() {
-        // 格式：PAY + 年月日 + 6位随机数，如：PAY20251229XXXXXX
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // 方案1: 使用时间戳后8位 + 2位随机数 (推荐)
+        long timestamp = System.currentTimeMillis();
+        String timestampStr = String.valueOf(timestamp);
+        // 取时间戳的后8位
+        String timePart = timestampStr.substring(timestampStr.length() - 8);
+
+        // 生成2位随机数 (00-99)
         Random random = new Random();
-        String randomNum = String.format("%06d", random.nextInt(1000000));
-        return "PAY" + date + randomNum;
+        String randomPart = String.format("%02d", random.nextInt(100));
+
+        return timePart + randomPart;
     }
 
     /**
