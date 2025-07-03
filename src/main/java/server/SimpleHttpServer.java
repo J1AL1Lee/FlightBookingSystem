@@ -45,32 +45,35 @@ public class SimpleHttpServer {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-        // API路径
+        // 🔐 用户认证相关路由
         server.createContext("/api/register", new RegisterHandler());
         server.createContext("/api/login", new LoginHandler());
+        server.createContext("/api/logout", new LogoutHandler());           // 新增：退出登录
+        server.createContext("/api/user/current", new CurrentUserHandler()); // 新增：获取当前用户信息
+
+        // 👥 用户管理路由
         server.createContext("/api/users", new UsersHandler());
-        server.createContext("/hello", new HelloHandler());
-        server.createContext("/test", new TestHandler());
+
+        // 🛩️ 航班搜索路由
         server.createContext("/api/flights/search", new SimpleFlightSearchHandler());
 
-        // 🎫 添加预订相关路由
+        // 🎫 订票相关路由
         server.createContext("/api/booking/create", new BookingHandler());
         server.createContext("/api/booking/cancel", new BookingHandler());
         server.createContext("/api/booking/price", new BookingHandler());
         server.createContext("/api/booking/orders", new BookingHandler());
         server.createContext("/api/booking/refund", new BookingHandler());
 
-        //管理员路径
-        server.createContext("/api/admin/flight/add", new AddFlightHandler());
-        //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
-        //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
-
-        // 主支付相关路由，使用支付宝
+        // 💰 支付相关路由
         server.createContext("/api/payments/create", new PaymentCreateHandler());
         server.createContext("/api/payments/status", new PaymentStatusHandler());
         server.createContext("/api/payments/notify", new PaymentNotifyHandler());
 
-        // 使用新的资源处理器
+        // 🧪 测试路由
+        server.createContext("/hello", new HelloHandler());
+        server.createContext("/test", new TestHandler());
+
+        // 📄 静态资源路由（必须放在最后）
         server.createContext("/", new ResourceBasedStaticHandler());
 
         server.setExecutor(null);
@@ -81,26 +84,54 @@ public class SimpleHttpServer {
         System.out.println("📍 当前工作目录: " + System.getProperty("user.dir"));
         System.out.println("📍 尝试读取: src/main/resources/static/sign_log.html");
 
-        System.out.println("📍 订票相关 API:");
+        System.out.println("\n🔐 用户认证 API:");
+        System.out.println("   POST /api/login - 用户登录");
+        System.out.println("   POST /api/logout - 用户退出");
+        System.out.println("   POST /api/register - 用户注册");
+        System.out.println("   GET /api/user/current - 获取当前登录用户信息");
+
+        System.out.println("\n🛩️ 航班搜索 API:");
+        System.out.println("   POST /api/flights/search - 搜索航班");
+
+        System.out.println("\n🎫 订票相关 API:");
         System.out.println("   POST /api/booking/create - 创建订单");
         System.out.println("   POST /api/booking/cancel - 取消订单");
         System.out.println("   POST /api/booking/refund - 申请退款");
         System.out.println("   GET /api/booking/price - 查询价格");
         System.out.println("   GET /api/booking/orders - 查询用户订单");
 
-        System.out.println("📍 支付宝支付 API:");
+        System.out.println("\n💰 支付宝支付 API:");
         System.out.println("   POST /api/payments/create - 发起支付（生成二维码）");
         System.out.println("   GET /api/payments/status - 查询支付状态");
         System.out.println("   POST /api/payments/notify - 接收支付宝通知");
 
-        System.out.println("按 Ctrl+C 停止服务器");
+        // 🧹 启动session清理任务（可选）
+        startSessionCleanupTask();
+
+        System.out.println("\n按 Ctrl+C 停止服务器");
+    }
+
+    /**
+     * 启动定期清理过期session的任务
+     */
+    private static void startSessionCleanupTask() {
+        Timer timer = new Timer("SessionCleanup", true);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                LoginHandler.cleanExpiredSessions();
+            }
+        }, 60000, 300000); // 1分钟后开始，每5分钟执行一次
+
+        System.out.println("🧹 Session清理任务已启动");
     }
 
     // 工具方法 - 设置CORS头
     public static void setCorsHeaders(HttpExchange exchange) {
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Credentials", "true"); // 重要：允许发送Cookie
     }
 
     // 工具方法 - 读取请求体
@@ -160,10 +191,44 @@ public class SimpleHttpServer {
         return error;
     }
 
-    public void stop(int i) {
+    // 工具方法 - 验证用户是否已登录
+    public static Map<String, Object> getCurrentUser(HttpExchange exchange) {
+        String sessionId = getSessionId(exchange);
+        if (sessionId != null && LoginHandler.sessions.containsKey(sessionId)) {
+            return LoginHandler.sessions.get(sessionId);
+        }
+        return null;
     }
 
-    public void start() {
+    // 工具方法 - 从请求中获取Session ID
+    public static String getSessionId(HttpExchange exchange) {
+        String cookie = exchange.getRequestHeaders().getFirst("Cookie");
+        if (cookie != null) {
+            String[] cookies = cookie.split(";");
+            for (String c : cookies) {
+                String[] parts = c.trim().split("=");
+                if (parts.length == 2 && "SESSIONID".equals(parts[0])) {
+                    return parts[1];
+                }
+            }
+        }
+        return null;
+    }
+
+    // 工具方法 - 检查是否需要认证的API
+    public static boolean needsAuth(String path) {
+        return path.startsWith("/api/booking") ||
+                path.startsWith("/api/orders") ||
+                path.startsWith("/api/user/") ||
+                path.startsWith("/api/payments");
+    }
+
+    // 工具方法 - 发送未认证响应
+    public static void sendUnauthorizedResponse(HttpExchange exchange) throws IOException {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", "未登录");
+        sendJsonResponse(exchange, 401, response);
     }
 
     // 支付状态查询处理器
@@ -271,42 +336,6 @@ public class SimpleHttpServer {
                 System.err.println("❌ 支付通知处理失败: " + e.getMessage());
                 sendJsonResponse(exchange, 500, createErrorResponse("通知处理失败: " + e.getMessage()));
             }
-        }
-    }
-
-    // 扩展支付相关路由和二维码服务
-    private static void extendPaymentRoutes(HttpServer server) {
-        try {
-            AlipayConfig config = new AlipayConfig();
-            config.setServerUrl("https://openapi-sandbox.dl.alipaydev.com/gateway.do");
-            config.setAppId("9021000149697288");
-            config.setPrivateKey("your_private_key"); // 替换为实际私钥
-            config.setAlipayPublicKey("your_alipay_public_key"); // 替换为实际公钥
-            config.setCharset("UTF-8");
-            config.setSignType("RSA2");
-            AlipayClient alipayClient = new DefaultAlipayClient(config);
-
-            server.createContext("/api/payments/cancel", new PaymentCancelHandler(alipayClient, new PayrecordDao()));
-            server.createContext("/qrcode", new HttpHandler() {
-                @Override
-                public void handle(HttpExchange exchange) throws IOException {
-                    String path = exchange.getRequestURI().getPath().substring(1); // 移除前缀 /qrcode
-                    File file = new File(path + ".png");
-                    if (file.exists()) {
-                        byte[] bytes = Files.readAllBytes(file.toPath());
-                        exchange.getResponseHeaders().set("Content-Type", "image/png");
-                        exchange.sendResponseHeaders(200, bytes.length);
-                        try (OutputStream os = exchange.getResponseBody()) {
-                            os.write(bytes);
-                        }
-                    } else {
-                        sendJsonResponse(exchange, 404, createErrorResponse("二维码图片未找到"));
-                    }
-                }
-            });
-            System.out.println("📍 扩展支付宝支付 API: /api/payments/cancel, /qrcode");
-        } catch (AlipayApiException e) {
-            System.err.println("❌ 支付宝初始化失败: " + e.getMessage());
         }
     }
 }

@@ -71,6 +71,40 @@
 			text-decoration: none;
 		}
 
+		.vip-badge {
+			background: linear-gradient(45deg, #ffd700, #ffed4e);
+			color: #333;
+			padding: 3px 8px;
+			border-radius: 12px;
+			font-size: 12px;
+			margin-left: 5px;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+		}
+
+		.admin-only {
+			display: none; /* 默认隐藏管理员功能 */
+		}
+
+		.login-only {
+			display: none; /* 默认隐藏需要登录的功能 */
+		}
+
+		.loading-spinner {
+			display: inline-block;
+			width: 16px;
+			height: 16px;
+			border: 2px solid #f3f3f3;
+			border-top: 2px solid #007bff;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+			margin-right: 5px;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
 		.background-image {
 			background-image: url('你的背景图片地址.jpg'); /* 替换为你的背景图片地址 */
 			background-size: cover; /* 使背景图片覆盖整个容器 */
@@ -107,20 +141,30 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent" style="text-align: center;">
 				<a class="nav-item nav-link" href="main.html">主页</a>
 				<a class="nav-item nav-link" href="search.html">航班查询</a>
-				<a class="nav-item nav-link" href="booking.html">订单管理</a>
-				<a class="nav-item nav-link" href="personal.html">个人信息管理</a>
-				<a class="nav-item nav-link" href="admin.html">管理员操作</a>
+				<a class="nav-item login-only nav-link" href="booking.html">订单管理</a>
+				<a class="nav-item login-only nav-link" href="personal.html">个人信息管理</a>
+				<!-- 管理员操作链接，默认隐藏 -->
+				<a class="nav-item nav-link admin-only" href="admin.html" id="admin-link">管理员操作</a>
 			</div>
 
 			<!-- 登录状态显示区域 -->
 			<div id="auth-section">
+				<!-- 加载状态 -->
+				<div id="loading-status" style="display: none;">
+					<span class="loading-spinner"></span>
+					<span style="color: white;">验证中...</span>
+				</div>
+
 				<!-- 未登录时显示登录按钮 -->
 				<a href="sign_log.html" class="main_login_bt" id="login-btn" style="display: none;">登录</a>
 
 				<!-- 已登录时显示用户信息和退出按钮 -->
 				<div class="user-info" id="user-info" style="display: none;">
-					<span id="welcome-text" style = "color:white; font-size: 16px;">欢迎, </span>
-					<span id="username-display" style = "color:white; font-size: 16px;"></span>
+					<span id="welcome-text" style="color:white; font-size: 16px;">欢迎, </span>
+					<span id="username-display" style="color:white; font-size: 16px;"></span>
+					<span id="vip-badge" class="vip-badge" style="display: none;">
+						<i class="fa fa-crown"></i> VIP
+					</span>
 					<button class="logout-btn" id="logout-btn">退出登录</button>
 				</div>
 			</div>
@@ -208,6 +252,7 @@
 </div>
 <!-- footer section end -->
 <!-- copyright section end -->
+
 <!-- Javascript files-->
 <script src="js/jquery.min.js"></script>
 <script src="js/popper.min.js"></script>
@@ -223,46 +268,232 @@
 
 <script>
 	$(document).ready(function() {
-		// 检查登录状态并更新UI
-		function updateLoginStatus() {
-			var isLoggedIn = localStorage.getItem('isLoggedIn');
-			var username = localStorage.getItem('username');
+		// 全局变量存储当前用户信息
+		let currentUser = null;
 
-			if (isLoggedIn === "true" && username) {
-				// 用户已登录 - 显示欢迎信息和退出按钮
-				$('#login-btn').hide();
-				$('#user-info').show();
-				$('#username-display').text(username);
-			} else {
-				// 用户未登录 - 显示登录按钮
-				$('#login-btn').show();
-				$('#user-info').hide();
+		// 封装安全的API请求工具类
+		const ApiClient = {
+			request: function(url, options = {}) {
+				const defaultOptions = {
+					type: 'GET',
+					contentType: 'application/json; charset=utf-8',
+					timeout: 10000,
+					xhrFields: {
+						withCredentials: true // 重要：包含Cookie用于session认证
+					}
+				};
+
+				const finalOptions = Object.assign({}, defaultOptions, options);
+
+				return new Promise((resolve, reject) => {
+					$.ajax(finalOptions.url || url, {
+						...finalOptions,
+						success: function(data, textStatus, xhr) {
+							resolve(data);
+						},
+						error: function(xhr, textStatus, errorThrown) {
+							let errorMsg = '请求失败';
+							try {
+								const response = JSON.parse(xhr.responseText);
+								errorMsg = response.message || errorMsg;
+							} catch (e) {
+								if (xhr.status === 0) {
+									errorMsg = '网络连接失败';
+								} else if (xhr.status === 401) {
+									errorMsg = '未登录';
+								} else {
+									errorMsg = `服务器错误 (${xhr.status})`;
+								}
+							}
+							reject(new Error(errorMsg));
+						}
+					});
+				});
+			}
+		};
+
+		// 安全的登录状态检查
+		async function checkLoginStatus() {
+			try {
+				// 显示加载状态
+				showLoadingStatus(true);
+
+				// 首先检查本地是否有登录标记
+				const isLoggedIn = localStorage.getItem('isLoggedIn');
+				if (isLoggedIn !== 'true') {
+					showGuestStatus();
+					return false;
+				}
+
+				// 从服务器验证session并获取完整用户信息
+				const response = await ApiClient.request('/api/user/current');
+
+				if (response && response.success && response.userInfo) {
+					// 登录有效，设置当前用户信息
+					currentUser = response.userInfo;
+					console.log('✅ 当前用户:', currentUser);
+
+					// 显示登录用户状态
+					showUserStatus(currentUser);
+					return true;
+				} else {
+					// session无效，清除本地状态
+					clearLocalLoginState();
+					showGuestStatus();
+					return false;
+				}
+
+			} catch (error) {
+				console.error('❌ 检查登录状态失败:', error);
+
+				// 网络错误或其他问题，显示游客状态
+				clearLocalLoginState();
+				showGuestStatus();
+				return false;
+			} finally {
+				// 隐藏加载状态
+				showLoadingStatus(false);
 			}
 		}
 
-		// 页面加载时检查登录状态
-		updateLoginStatus();
-
-		// 退出登录功能
-		$('#logout-btn').click(function() {
-			if (confirm('确定要退出登录吗？')) {
-				// 清除登录状态
-				localStorage.removeItem('isLoggedIn');
-				localStorage.removeItem('username');
-
-				// 更新UI
-				updateLoginStatus();
-
-				alert('已成功退出登录');
+		// 显示加载状态
+		function showLoadingStatus(show) {
+			if (show) {
+				$('#loading-status').show();
+				$('#login-btn').show();
+				$('#user-info').hide();
+			} else {
+				$('#loading-status').hide();
 			}
+		}
+
+		// 显示游客状态（未登录）
+		function showGuestStatus() {
+			$('#login-btn').show();
+			$('#user-info').hide();
+			$('.admin-only').hide(); // 隐藏管理员功能
+			$('.login-only').hide(); // 隐藏需要登录的功能
+			console.log('👤 显示游客状态');
+		}
+
+		// 显示用户登录状态
+		function showUserStatus(userInfo) {
+			$('#login-btn').hide();
+			$('#user-info').show();
+			$('.login-only').show(); // 显示需要登录的功能
+
+			// 显示用户名
+			$('#username-display').text(userInfo.userName);
+
+			// 显示VIP状态
+			if (userInfo.vipState === '是') {
+				$('#vip-badge').show();
+			} else {
+				$('#vip-badge').hide();
+			}
+
+			// 根据权限显示管理员功能
+			// userAuthority = 1 是普通用户，> 1 是管理员
+			if (userInfo.userAuthority < 1) {
+				$('.admin-only').show();
+				console.log('🔐 显示管理员功能，权限等级:', userInfo.userAuthority);
+			} else {
+				$('.admin-only').hide();
+				console.log('👤 普通用户，隐藏管理员功能');
+			}
+
+			console.log('✅ 显示用户状态:', {
+				userName: userInfo.userName,
+				vipState: userInfo.vipState,
+				userAuthority: userInfo.userAuthority
+			});
+		}
+
+		// 清除本地登录状态
+		function clearLocalLoginState() {
+			localStorage.removeItem('isLoggedIn');
+			localStorage.removeItem('userName');
+			// 清理可能残留的旧版本数据
+			localStorage.removeItem('userInfo');
+			sessionStorage.removeItem('currentUser');
+		}
+
+		// 安全退出登录
+		async function logout() {
+			if (!confirm('确定要退出登录吗？')) {
+				return;
+			}
+
+			try {
+				// 显示加载状态
+				showLoadingStatus(true);
+
+				// 调用服务器端退出登录API
+				await ApiClient.request('/api/logout', {
+					type: 'POST'
+				});
+
+				console.log('✅ 服务器端退出登录成功');
+			} catch (error) {
+				console.error('❌ 服务器端退出登录失败:', error);
+				// 即使服务器端退出失败，也继续清理本地状态
+			}
+
+			// 清除本地登录状态
+			clearLocalLoginState();
+			currentUser = null;
+
+			// 更新UI
+			showGuestStatus();
+
+			alert('已成功退出登录');
+		}
+
+		// 获取当前用户信息（供其他脚本使用）
+		window.getCurrentUser = function() {
+			return currentUser;
+		};
+
+		// 检查用户权限（供其他脚本使用）
+		window.hasPermission = function(requiredAuthority) {
+			return currentUser && currentUser.userAuthority >= requiredAuthority;
+		};
+
+		// 检查是否为VIP用户（供其他脚本使用）
+		window.isVipUser = function() {
+			return currentUser && currentUser.vipState === '是';
+		};
+
+		// 绑定退出登录按钮事件
+		$('#logout-btn').click(function() {
+			logout();
 		});
 
 		// 监听存储变化（如果在其他标签页登录/退出）
 		$(window).on('storage', function(e) {
-			if (e.originalEvent.key === 'isLoggedIn' || e.originalEvent.key === 'username') {
-				updateLoginStatus();
+			if (e.originalEvent.key === 'isLoggedIn') {
+				console.log('🔄 检测到其他标签页登录状态变化，重新检查登录状态');
+				setTimeout(checkLoginStatus, 100); // 延迟一点检查，避免竞争条件
 			}
 		});
+
+		// 页面加载时检查登录状态
+		checkLoginStatus().then(isLoggedIn => {
+			if (isLoggedIn) {
+				console.log('🎉 用户已登录，页面初始化完成');
+			} else {
+				console.log('👋 游客访问，页面初始化完成');
+			}
+		});
+
+		// 定期检查登录状态（可选，每5分钟检查一次）
+		setInterval(async function() {
+			const localLoginState = localStorage.getItem('isLoggedIn');
+			if (localLoginState === 'true' && !currentUser) {
+				console.log('🔄 定期检查：本地显示已登录但用户信息为空，重新验证');
+				await checkLoginStatus();
+			}
+		}, 5 * 60 * 1000); // 5分钟
 	});
 </script>
 </body>

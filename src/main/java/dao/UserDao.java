@@ -181,7 +181,46 @@ public class UserDao {
 
         return users;
     }
+    /**
+     * 验证用户登录凭据
+     * @param userId 用户ID
+     * @param password 密码
+     * @return 验证成功返回User对象，失败返回null
+     */
+    public User validateUser(String userId, String password) {
+        String sql = "SELECT * FROM user WHERE user_ID = ? AND user_password = ?";
 
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, userId);
+            stmt.setString(2, password); // 注意：实际项目中应该对密码进行加密存储和验证
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getString("user_ID"));
+                user.setUserPassword(rs.getString("user_password"));
+                user.setUserName(rs.getString("user_name"));
+                user.setUserGender(rs.getString("user_gender"));
+                user.setUserTelephone(rs.getString("user_telephone"));
+                user.setUserSignUpTime(rs.getTimestamp("user_SignUpTime").toLocalDateTime());
+                user.setVipState(rs.getString("VIPstate"));
+                user.setUserAuthority(rs.getInt("user_authority"));
+
+                System.out.println("✅ 用户验证成功: " + userId);
+                return user;
+            } else {
+                System.out.println("❌ 用户验证失败: " + userId);
+                return null;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ 数据库查询错误: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
     // 将ResultSet转换为User对象
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User();
