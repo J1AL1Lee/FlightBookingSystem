@@ -64,6 +64,11 @@ public class SimpleHttpServer {
         server.createContext("/api/booking/orders", new BookingHandler());
         server.createContext("/api/booking/refund", new BookingHandler());
 
+        //管理员路径
+        server.createContext("/api/admin/flight/add", new AddFlightHandler());
+        //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
+        //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
+
         // 💰 支付相关路由
         server.createContext("/api/payments/create", new PaymentCreateHandler());
         server.createContext("/api/payments/status", new PaymentStatusHandler());
