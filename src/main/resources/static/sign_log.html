@@ -186,6 +186,9 @@
                         if (response.success) {
                             alert('登录成功！欢迎 ' + response.userName);
                             // 可以将用户信息存储到sessionStorage
+                            // 登录成功后应该执行类似这样的代码
+                            // 改成这样存储
+                            localStorage.setItem('userInfo', JSON.stringify(response));
                             sessionStorage.setItem('currentUser', JSON.stringify(response));
                             // 跳转到主页
                             window.location.href = 'main.html';
