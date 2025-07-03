@@ -175,10 +175,7 @@
                         <td>user1@example.com</td>
                         <td>2023-01-15</td>
                         <td>正常</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary action-btn" onclick="editUser('10001')">修改</button>
-                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('10001')">删除</button>
-                        </td>
+
                     </tr>
                     <tr>
                         <td>10002</td>
@@ -189,10 +186,7 @@
                         <td>user2@example.com</td>
                         <td>2023-02-20</td>
                         <td>正常</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary action-btn" onclick="editUser('10002')">修改</button>
-                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('10002')">删除</button>
-                        </td>
+
                     </tr>
                     </tbody>
                 </table>
@@ -241,6 +235,7 @@
         // 这里可以调用API获取航班和用户数据
         // loadFlightData();
         // loadUserData();
+        loadFlightData();
     });
 
     // 搜索航班
@@ -279,10 +274,7 @@
                     <td><input type="text" class="form-control economy-price" placeholder="经济舱价格"></td>
                     <td><input type="text" class="form-control business-price" placeholder="商务舱价格"></td>
                     <td><input type="text" class="form-control discount" placeholder="VIP折扣"></td>
-                    <td>
-                        <button class="btn btn-sm btn-success action-btn" onclick="saveNewFlight()">保存</button>
-                        <button class="btn btn-sm btn-danger action-btn" onclick="cancelNewFlight()">取消</button>
-                    </td>
+
                 </tr>
             `;
 
@@ -381,6 +373,13 @@
             // });
         }
     }
+    function loadFlightData() {
+        $.get('/api/admin/flight/all', function(data) {
+            updateFlightTable(data);
+        }).fail(function(xhr) {
+            alert('加载航班数据失败: ' + xhr.responseText);
+        });
+    }
 
     // 编辑用户
     function editUser(userId) {
@@ -405,28 +404,26 @@
 
     // 更新航班表格
     function updateFlightTable(data) {
-        // 这里可以根据API返回的数据更新表格
-        // 示例代码:
         let html = '';
         data.forEach(flight => {
             html += `<tr>
-                    <td>${flight.number}</td>
-                    <td>${flight.departure}</td>
-                    <td>${flight.destination}</td>
-                    <td>${flight.departureTime}</td>
-                    <td>${flight.arrivalTime}</td>
-                    <td>¥${flight.economyPrice}</td>
-                    <td>¥${flight.businessPrice}</td>
-                    <td>¥${flight.firstClassPrice}</td>
-                    <td>${flight.status}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary action-btn" onclick="editFlight('${flight.id}')">修改</button>
-                        <button class="btn btn-sm btn-danger action-btn" onclick="deleteFlight('${flight.id}')">删除</button>
-                    </td>
-                </tr>`;
+            <td>${flight.flightId}</td>
+            <td>${flight.airlinecompanyId}</td>
+            <td>${flight.airportFrom}</td>
+            <td>${flight.airportTo}</td>
+            <td>${flight.timeTakeoff}</td>
+            <td>${flight.timeArrive}</td>
+            <td>${flight.seat0Capacity}</td>
+            <td>${flight.seat1Capacity}</td>
+            <td>${flight.seat0Price}</td>
+            <td>${flight.seat1Price}</td>
+            <td>${flight.discount}</td>
+
+        </tr>`;
         });
         $('#flightTableBody').html(html);
     }
+
 
     // 更新用户表格
     function updateUserTable(data) {
