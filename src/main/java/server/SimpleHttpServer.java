@@ -68,6 +68,12 @@ public class SimpleHttpServer {
         server.createContext("/api/user/update", new UpdateUserHandler());
 
 
+        // 📋 订单管理相关路由 - 新增
+        server.createContext("/api/orders/user", new OrderManagementHandler());
+        server.createContext("/api/orders/stats", new OrderManagementHandler());
+        server.createContext("/api/orders/cancel", new OrderManagementHandler());
+        server.createContext("/api/orders/refund", new OrderManagementHandler());
+
         //管理员路径
         server.createContext("/api/admin/flight/add", new AddFlightHandler());
         server.createContext("/api/admin/flight/all", new GetAllFlightsHandler());
