@@ -12,6 +12,56 @@ let priceInfo = {
 // 🔧 添加防重复提交的标志
 let isBookingInProgress = false;
 
+// 封装安全的API请求工具类
+const ApiClient = {
+    request: function(url, options = {}) {
+        const defaultOptions = {
+            type: 'GET',
+            contentType: 'application/json; charset=utf-8',
+            timeout: 10000,
+            xhrFields: {
+                withCredentials: true // 重要：包含Cookie用于session认证
+            }
+        };
+
+        const finalOptions = Object.assign({}, defaultOptions, options);
+
+        return new Promise((resolve, reject) => {
+            $.ajax(finalOptions.url || url, {
+                ...finalOptions,
+                success: function(data, textStatus, xhr) {
+                    // 检查是否因为session过期需要重新登录
+                    if (data && data.success === false && data.message === '未登录') {
+                        redirectToLogin('登录已过期，请重新登录');
+                        return;
+                    }
+                    resolve(data);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    // 401表示未认证，跳转到登录页
+                    if (xhr.status === 401) {
+                        redirectToLogin('登录已过期，请重新登录');
+                        return;
+                    }
+
+                    let errorMsg = '请求失败';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMsg = response.message || errorMsg;
+                    } catch (e) {
+                        if (xhr.status === 0) {
+                            errorMsg = '网络连接失败，请检查网络';
+                        } else {
+                            errorMsg = `服务器错误 (${xhr.status})`;
+                        }
+                    }
+                    reject(new Error(errorMsg));
+                }
+            });
+        });
+    }
+};
+
 // 页面加载时执行 - 🎯 合并到一个事件监听器
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 页面加载完成，开始初始化...');
@@ -53,7 +103,8 @@ async function initializePage() {
         showMessage('正在加载航班和用户信息...', 'info');
 
         // 1. 检查用户登录状态
-        if (!checkLoginStatus()) {
+        const isLoggedIn = await checkLoginStatus();
+        if (!isLoggedIn) {
             return;
         }
 
@@ -65,13 +116,10 @@ async function initializePage() {
         // 3. 通过航班号查询API获取航班信息
         await loadFlightInfoByApi();
 
-        // 4. 加载用户信息
-        await loadUserInfo();
-
-        // 5. 加载价格信息（基于获取到的航班信息）
+        // 4. 加载价格信息（基于获取到的航班信息）
         await loadPriceInfo();
 
-        // 6. 默认选择经济舱
+        // 5. 默认选择经济舱
         selectSeat(0);
 
         // 清除加载消息
@@ -93,29 +141,66 @@ async function initializePage() {
     }
 }
 
-// 检查用户登录状态
-function checkLoginStatus() {
-    const userInfo = localStorage.getItem('userInfo');
-
-    if (!userInfo) {
-        localStorage.setItem('redirectUrl', window.location.href);
-        showMessage('请先登录后再进行预订', 'error');
-        setTimeout(() => {
-            window.location.href = 'sign_log.html';
-        }, 2000);
-        return false;
-    }
-
+// 安全的登录状态检查函数
+async function checkLoginStatus() {
     try {
-        currentUser = JSON.parse(userInfo);
-        console.log('✅ 当前用户:', currentUser);
-        return true;
+        // 首先检查本地是否有登录标记
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if (isLoggedIn !== 'true') {
+            redirectToLogin('请先登录后再进行预订');
+            return false;
+        }
+
+        // 从服务器验证session是否有效并获取完整用户信息
+        const response = await ApiClient.request('/api/user/current');
+
+        if (response && response.success && response.userInfo) {
+            // 登录有效，设置当前用户信息
+            currentUser = response.userInfo;
+            console.log('✅ 当前用户:', currentUser);
+
+            // 显示用户信息
+            displayUserInfo();
+
+            return true;
+        } else {
+            // session无效，清除本地状态
+            clearLocalLoginState();
+            redirectToLogin('登录已过期，请重新登录');
+            return false;
+        }
+
     } catch (error) {
-        console.error('❌ 解析用户信息失败:', error);
-        localStorage.removeItem('userInfo');
-        window.location.href = 'sign_log.html';
+        console.error('❌ 检查登录状态失败:', error);
+
+        // 网络错误或其他问题，清除本地状态
+        clearLocalLoginState();
+        redirectToLogin('验证登录状态失败，请重新登录');
         return false;
     }
+}
+
+// 清除本地登录状态
+function clearLocalLoginState() {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userName');
+    // 清理可能残留的旧版本数据
+    localStorage.removeItem('userInfo');
+    sessionStorage.removeItem('currentUser');
+}
+
+// 跳转到登录页面
+function redirectToLogin(message) {
+    // 保存当前页面URL，登录后可以回到这里
+    localStorage.setItem('redirectUrl', window.location.href);
+
+    if (message) {
+        showMessage(message, 'error');
+    }
+
+    setTimeout(() => {
+        window.location.href = 'sign_log.html';
+    }, 2000);
 }
 
 // 获取URL参数
@@ -160,13 +245,10 @@ async function loadFlightInfoByApi() {
 
         console.log('🔍 查询航班:', flightId, '日期:', formattedDate);
 
-        // 调用航班号查询API
-        const response = await fetch('/api/flights/search', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+        // 使用安全的API请求
+        const result = await ApiClient.request('/api/flights/search', {
+            type: 'POST',
+            data: JSON.stringify({
                 flightId: flightId,
                 flightDate: formattedDate,
                 fuzzySearch: false, // 精确搜索
@@ -174,11 +256,6 @@ async function loadFlightInfoByApi() {
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const result = await response.json();
         console.log('🔍 API响应:', result);
 
         if (!result.success) {
@@ -229,43 +306,6 @@ async function loadFlightInfoByApi() {
     } catch (error) {
         console.error('❌ 加载航班信息失败:', error);
         throw new Error('加载航班信息失败：' + error.message);
-    }
-}
-
-// 加载用户信息
-async function loadUserInfo() {
-    try {
-        console.log('👤 开始加载用户信息...');
-
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-            throw new Error('获取用户列表失败');
-        }
-
-        const result = await response.json();
-        if (!result.success) {
-            throw new Error(result.message || '获取用户信息失败');
-        }
-
-        // 查找当前用户
-        const userDetail = result.data.find(user => user.userId === currentUser.userId);
-        if (!userDetail) {
-            throw new Error('未找到用户详细信息');
-        }
-
-        // 更新当前用户信息
-        currentUser = { ...currentUser, ...userDetail };
-
-        // 显示用户信息
-        displayUserInfo();
-
-        console.log('✅ 用户信息加载完成:', currentUser);
-
-    } catch (error) {
-        console.error('❌ 加载用户信息失败:', error);
-        // 使用缓存的用户信息
-        displayUserInfo();
-        throw new Error('加载用户详细信息失败：' + error.message);
     }
 }
 
@@ -645,19 +685,15 @@ async function confirmBooking() {
     try {
         console.log('📤 提交预订请求...');
 
-        const response = await fetch('/api/booking/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+        // 使用安全的API请求
+        const result = await ApiClient.request('/api/booking/create', {
+            type: 'POST',
+            data: JSON.stringify({
                 flightrecordId: flightrecordId,
                 userId: currentUser.userId,
                 seatType: Number(selectedSeatType)
             })
         });
-
-        const result = await response.json();
 
         if (result.success) {
             showMessage(`预订成功！\n订单号：${result.orderId}\n总费用：¥${result.totalPrice}\n订单状态：${result.orderState}`, 'success');
@@ -676,7 +712,7 @@ async function confirmBooking() {
 
     } catch (error) {
         console.error('❌ 预订请求异常:', error);
-        showMessage('预订失败，请检查网络连接后重试', 'error');
+        showMessage('预订失败：' + error.message, 'error');
     } finally {
         // 🔧 重置预订进行中标志
         isBookingInProgress = false;
@@ -798,5 +834,39 @@ function calculateFlightDuration(takeoffTime, arriveTime) {
     } catch (error) {
         console.error('计算飞行时长失败:', error);
         return '计算中...';
+    }
+}
+
+// 工具函数：检查用户是否有特定权限
+function hasPermission(requiredAuthority) {
+    return currentUser && currentUser.userAuthority >= requiredAuthority;
+}
+
+// 工具函数：检查用户是否为VIP
+function isVipUser() {
+    return currentUser && currentUser.vipState === '是';
+}
+
+// 安全的API请求封装（带登录检查）
+async function makeAuthenticatedRequest(url, options = {}) {
+    try {
+        // 确保用户已登录
+        const isLoggedIn = await checkLoginStatus();
+        if (!isLoggedIn) {
+            return null;
+        }
+
+        // 发送请求
+        return await ApiClient.request(url, options);
+
+    } catch (error) {
+        console.error('❌ 认证请求失败:', error);
+
+        // 如果是认证错误，重新检查登录状态
+        if (error.message.includes('登录') || error.message.includes('401')) {
+            await checkLoginStatus();
+        }
+
+        throw error;
     }
 }
