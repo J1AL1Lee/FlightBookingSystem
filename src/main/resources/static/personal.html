@@ -145,62 +145,36 @@
     <!-- header section end -->
 	
     <!-- user info section start - 改进后的个人信息部分 -->
-    <div class="user-info-container container">
+    <div class = "user-info-container container">
         <h2 class="title">基本信息</h2>
-        <div class="info-item">
-            <span class="label">* 用户名:</span>
-            <span class="data editable" id="username">admin</span>
-        </div>
-        <div class="info-item">
-            <span class="label">* 姓名:</span>
-            <span class="data editable" id="name">徐万里</span>
-        </div>
-        <div class="info-item">
-            <span class="label">* 国家/地区:</span>
-            <span class="data editable" id="country">中国</span>
-        </div>
-        <div class="info-item">
-            <span class="label">* 证件类型:</span>
-            <span class="data editable" id="id-type">身份证</span>
-        </div>
-        <div class="info-item">
-            <span class="label">* 证件号码:</span>
-            <span class="data editable" id="id-number">1101********3598</span>
-        </div>
-        <div class="info-item">
-            <span class="label">核验状态:</span>
-            <span class="data" id="verify-status">通过</span>
-        </div>
+        <form>
+            <div class = "info-item">
+                <label>用户名：</label>
+                <input type="text" id="user_name">
+            </div>
 
-        <h2 class="title">联系方式</h2>
-        <div class="info-item">
-            <span class="label">* 手机号:</span>
-            <span class="data editable" onclick = "change_phonenumber()" id="phone-number">156****6692</span>
-        </div>
-        <div class="info-item">
-            <span class="label">邮箱:</span>
-            <span class="data editable" onclick = "change_email()" id="email">machen@apache.org</span>
-        </div>
-        <div class="info-item">
-            <span class="label">地址:</span>
-            <span class="data editable" id="address">北京市海淀区</span>
-        </div>
-        <div class="info-item">
-            <span class="label">邮编:</span>
-            <span class="data editable" id="zipcode">100080</span>
-        </div>
+            <div class = "info-item">
+                <label>密码：</label>
+                <input type="password" id="user_password">
+            </div>
 
-        <h2 class="title">附加信息</h2>
-        <div class="info-item">
-            <span class="label">* 优惠(待)类:</span>
-            <span class="data editable" id="discount">成人</span>
-        </div>
-        
-        <div class="actions">
-            <button class="btn btn-save">保存更改</button>
-            <button class="btn btn-cancel">取消</button>
-        </div>
+            <div class = "info-item">
+                <label>性别：</label>
+                <select id="user_gender">
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                </select>
+            </div>
+            <div class = "info-item">
+                <label>电话：</label>
+                <input type="text" id="user_telephone">
+            </div>
+
+            <button type="button" onclick="saveUserInfo()">保存修改</button>
+        </form>
     </div>
+
+
     <!-- user info section end -->
 
 	<!-- footer section start -->
@@ -236,8 +210,22 @@
     <script src="js/owl.carousel.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
     <script>
+
         // 仅保留个人信息部分的交互功能
         $(document).ready(function() {
+
+            //加载登录用户信息
+            $.get('/api/user/current', function(res) {
+                if (res && res.success !== false) {
+                    $('#user_name').val(res.userName || '');
+                    $('#user_password').val(res.userPassword || '');
+                    $('#user_gender').val(res.userGender || '');
+                    $('#user_telephone').val(res.userTelephone || '');
+                } else {
+                    alert('请先登录');
+                    window.location.href = '/sign_log.html';
+                }
+            });
             // 保存按钮点击事件
             $('.btn-save').click(function() {
                 alert('个人信息已保存！');
@@ -250,6 +238,34 @@
                 }
             });
         });
+
+        function saveUserInfo() {
+            const data = {
+                user_name: $('#user_name').val(),
+                user_password: $('#user_password').val(),
+                user_gender: $('#user_gender').val(),
+                user_telephone: $('#user_telephone').val()
+            };
+
+            $.ajax({
+                url: '/api/user/update',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(res) {
+                    if (res.success) {
+                        alert('保存成功');
+                    } else {
+                        alert('保存失败: ' + res.message);
+                    }
+                },
+                error: function(xhr) {
+                    alert('请求错误: ' + xhr.responseText);
+                }
+            });
+        }
+
+
     </script>
     <script>
         document.getElementById("phone-number").addEventListener("click", function() {

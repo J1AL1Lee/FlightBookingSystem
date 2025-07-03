@@ -67,6 +67,7 @@ public class SimpleHttpServer {
         //管理员路径
         server.createContext("/api/admin/flight/add", new AddFlightHandler());
         server.createContext("/api/admin/flight/all", new GetAllFlightsHandler());
+        server.createContext("/api/user/update", new UpdateUserHandler());
         //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
         //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
 

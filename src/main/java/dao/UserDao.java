@@ -234,4 +234,24 @@ public class UserDao {
         user.setUserAuthority(rs.getInt("user_authority"));
         return user;
     }
+    //个人信息管理更新信息功能（可更新用户密码、用户名、性别和电话）
+    public boolean updateUserInfo(String userId, String name, String password, String gender, String phone) {
+        String sql = "UPDATE user SET user_name=?, user_password=?, user_gender=?, user_telephone=? WHERE user_ID=?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, name);
+            stmt.setString(2, password);
+            stmt.setString(3, gender);
+            stmt.setString(4, phone);
+            stmt.setString(5, userId);
+
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }
