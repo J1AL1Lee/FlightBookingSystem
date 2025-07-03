@@ -28,7 +28,7 @@ public class ResourceBasedStaticHandler implements HttpHandler {
             requestPath = "/sign_log.html";
         }
 
-        System.out.println("📂 请求文件: " + requestPath);
+        //System.out.println("📂 请求文件: " + requestPath);
 
         try {
             // 方法1：尝试从classpath读取（编译后的资源）
@@ -47,19 +47,19 @@ public class ResourceBasedStaticHandler implements HttpHandler {
                 for (String path : possiblePaths) {
                     try {
                         Path filePath = Paths.get(path);
-                        System.out.println("🔍 尝试路径: " + filePath.toAbsolutePath());
+                       // System.out.println("🔍 尝试路径: " + filePath.toAbsolutePath());
 
                         if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
                             resourceStream = Files.newInputStream(filePath);
-                            System.out.println("✅ 找到文件: " + path);
+                           // System.out.println("✅ 找到文件: " + path);
                             break;
                         }
                     } catch (Exception e) {
-                        System.out.println("❌ 路径失败: " + path + " - " + e.getMessage());
+                        //System.out.println("❌ 路径失败: " + path + " - " + e.getMessage());
                     }
                 }
             } else {
-                System.out.println("✅ 从classpath找到资源: " + resourcePath);
+                //System.out.println("✅ 从classpath找到资源: " + resourcePath);
             }
 
             if (resourceStream != null) {
@@ -76,7 +76,7 @@ public class ResourceBasedStaticHandler implements HttpHandler {
                     os.write(content);
                 }
 
-                System.out.println("✅ 成功返回文件: " + requestPath + " (" + content.length + " bytes)");
+                //System.out.println("✅ 成功返回文件: " + requestPath + " (" + content.length + " bytes)");
             } else {
                 // 文件完全找不到，显示详细调试信息
                 StringBuilder debugInfo = new StringBuilder();
@@ -126,11 +126,11 @@ public class ResourceBasedStaticHandler implements HttpHandler {
                     os.write(debugStr.getBytes(StandardCharsets.UTF_8));
                 }
 
-                System.out.println("❌ 文件完全找不到: " + requestPath);
-                System.out.println(debugStr);
+                //System.out.println("❌ 文件完全找不到: " + requestPath);
+                //System.out.println(debugStr);
             }
         } catch (Exception e) {
-            System.err.println("❌ 处理文件失败: " + e.getMessage());
+            //System.err.println("❌ 处理文件失败: " + e.getMessage());
             e.printStackTrace();
 
             String error = "500 - Internal Server Error: " + e.getMessage();
