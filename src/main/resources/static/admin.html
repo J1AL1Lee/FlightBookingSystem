@@ -1,356 +1,415 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<!-- basic -->
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- mobile metas -->
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="viewport" content="initial-scale=1, maximum-scale=1">
-<!-- site metas -->
-<title>航空票务系统 - 管理员</title>
-<meta name="keywords" content="">
-<meta name="description" content="">
-<meta name="author" content="">	
-<!-- bootstrap css -->
-<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-<!-- style css -->
-<link rel="stylesheet" type="text/css" href="css/style.css">
-<!-- Responsive-->
-<link rel="stylesheet" href="css/responsive.css">
-<!-- fevicon -->
-<link rel="icon" href="images/fevicon.png" type="image/gif" />
-<!-- Scrollbar Custom CSS -->
-<link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
-<!-- Tweaks for older IEs-->
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
-<!-- owl stylesheets --> 
-<link rel="stylesheet" href="css/owl.carousel.min.css">
-<link rel="stylesheet" href="css/owl.theme.default.min.css">
-<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
-<style>
-    /* 管理员页面特有样式 */
-    .admin-section {
-        padding: 30px 0;
-    }
-    
-    .admin-panel {
-        background: white;
-        border-radius: 5px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .panel-title {
-        font-size: 1.5rem;
-        color: #333;
-        margin: 0;
-    }
-    
-    .search-box {
-        display: flex;
-        width: 300px;
-    }
-    
-    .search-box input {
-        flex-grow: 1;
-        margin-right: 10px;
-    }
-    
-    .action-btn {
-        padding: 5px 10px;
-        margin: 0 3px;
-        font-size: 0.9rem;
-    }
-    
-    .btn-add {
-        margin-bottom: 15px;
-    }
-</style>
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title>航空票务系统 - 管理员</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <!-- style css -->
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <!-- Responsive-->
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- fevicon -->
+    <link rel="icon" href="images/fevicon.png" type="image/gif" />
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
+    <!-- Tweaks for older IEs-->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.0.3/css/font-awesome.css">
+    <!-- owl stylesheets -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+    <style src = "css/admin.css"></style>
+
 </head>
 <body>
-	<!-- header section start -->
-	<div class="header_section">
-		<div class="container">
-			<nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <div class="logo"><a href="main.html"><img src="images/logo.png"></a></div>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"aria-label="Toggle navigation">
+<!-- header section start -->
+<div class="header_section">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="logo"><a href="main.html"></a><img src="images/logo.png"></a></div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                   <a class="nav-item nav-link" href="main.html">主页</a>
-				   <a class="nav-item nav-link" href="search.html">航班查询</a>
-                   <a class="nav-item nav-link" href="booking.html">订单管理</a>
-                   <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
-                   <a class="nav-item nav-link" href="admin.html">管理员操作</a>
-                </div>
-            </nav>
-		</div>
-    </div>    
-	<!-- header section end -->
-	
-    <!-- 管理员内容部分 -->
-    <div class="admin-section layout_padding">
-        <div class="container">
-            <!-- 航班管理面板 -->
-            <div class="admin-panel">
-                <div class="panel-header">
-                    <h2 class="panel-title">航班管理</h2>
-                    <div class="search-box">
-                        <input type="text" class="form-control" placeholder="搜索航班号/出发地...">
-                        <button class="btn btn-primary" onclick="searchFlights()">查询</button>
-                    </div>
-                </div>
-                
-                <button class="btn btn-success btn-add" onclick="showAddFlightModal()">
-                    <i class="fa fa-plus"></i> 添加航班
-                </button>
-                
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th>航班号</th>
-                                <th>出发地</th>
-                                <th>目的地</th>
-                                <th>出发时间</th>
-                                <th>到达时间</th>
-                                <th>经济舱价格</th>
-                                <th>商务舱价格</th>
-                                <th>头等舱价格</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="flightTableBody">
-                            <!-- 航班数据将通过JavaScript动态加载 -->
-                            <tr>
-                                <td>CA1234</td>
-                                <td>北京</td>
-                                <td>上海</td>
-                                <td>2023-06-01 08:00</td>
-                                <td>2023-06-01 10:00</td>
-                                <td>¥1200</td>
-                                <td>¥2400</td>
-                                <td>¥3600</td>
-                                <td>正常</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary action-btn" onclick="editFlight('CA1234')">修改</button>
-                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteFlight('CA1234')">删除</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>MU5678</td>
-                                <td>上海</td>
-                                <td>广州</td>
-                                <td>2023-06-02 14:00</td>
-                                <td>2023-06-02 16:30</td>
-                                <td>¥1500</td>
-                                <td>¥3000</td>
-                                <td>¥4500</td>
-                                <td>正常</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary action-btn" onclick="editFlight('MU5678')">修改</button>
-                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteFlight('MU5678')">删除</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <a class="nav-item nav-link" href="main.html">主页</a>
+                <a class="nav-item nav-link" href="search.html">航班查询</a>
+                <a class="nav-item nav-link" href="booking.html">订单管理</a>
+                <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
+                <a class="nav-item nav-link" href="admin.html" id = "admin-page">管理员操作</a>
+            </div>
+        </nav>
+    </div>
+</div>
+<!-- header section end -->
+
+<!-- 管理员内容部分 -->
+<div class="admin-section layout_padding">
+    <div class="container">
+        <!-- 航班管理面板 -->
+        <div class="admin-panel">
+            <h2 class = "title">航班管理</h2>
+            <div class="panel-header">
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="搜索航班号/出发地...">
+                    <button class="btn btn-primary" onclick="searchFlights()">查询</button>
                 </div>
             </div>
-            
-            <!-- 用户管理面板 -->
-            <div class="admin-panel">
-                <div class="panel-header">
-                    <h2 class="panel-title">用户管理</h2>
-                    <div class="search-box">
-                        <input type="text" class="form-control" placeholder="搜索用户名/姓名...">
-                        <button class="btn btn-primary" onclick="searchUsers()">查询</button>
-                    </div>
+            <div class = "row">
+                <div class = "col-sm-12">
+                    <button class="btn btn-success btn-add" onclick="showAddFlightModal()">
+                        <i class="fa fa-plus"></i> 添加航班
+                    </button>
                 </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th>用户ID</th>
-                                <th>用户名</th>
-                                <th>姓名</th>
-                                <th>证件号</th>
-                                <th>手机号</th>
-                                <th>邮箱</th>
-                                <th>注册时间</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="userTableBody">
-                            <!-- 用户数据将通过JavaScript动态加载 -->
-                            <tr>
-                                <td>10001</td>
-                                <td>user1</td>
-                                <td>张三</td>
-                                <td>110********1234</td>
-                                <td>138****5678</td>
-                                <td>user1@example.com</td>
-                                <td>2023-01-15</td>
-                                <td>正常</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary action-btn" onclick="editUser('10001')">修改</button>
-                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('10001')">删除</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>10002</td>
-                                <td>user2</td>
-                                <td>李四</td>
-                                <td>310********5678</td>
-                                <td>139****1234</td>
-                                <td>user2@example.com</td>
-                                <td>2023-02-20</td>
-                                <td>正常</td>
-                                <td>
-                                    <button class="btn btn-sm btn-primary action-btn" onclick="editUser('10002')">修改</button>
-                                    <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('10002')">删除</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class = "col-sm-12">
+                    <button class="btn btn-success btn-search" onclick="showDatabase()">
+                        <i class="fa fa-search"></i> 查看数据库
+                    </button>
                 </div>
+            </div>
+
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                    <tr>
+                        <th>航班号</th>
+                        <th>航班公司ID</th>
+                        <th>出发机场</th>
+                        <th>目的机场</th>
+                        <th>出发时间</th>
+                        <th>到达时间</th>
+                        <th>经济舱容量</th>
+                        <th>商务舱容量</th>
+                        <th>经济舱价格</th>
+                        <th>商务舱价格</th>
+                        <th>VIP折扣</th>
+
+                    </tr>
+                    </thead>
+                    <tbody id="flightTableBody">
+                    <!-- 航班数据将通过JavaScript动态加载 -->
+                    <tr>
+                        <td>00CA1234</td>
+                        <td>10001</td>
+                        <td>北京首都机场</td>
+                        <td>上海浦东机场</td>
+                        <td>08:00</td>
+                        <td>10:00</td>
+                        <td>20</td>
+                        <td>80</td>
+                        <td>1200</td>
+                        <td>2400</td>
+                        <td>0.8</td>
+
+                        <td>
+                            <button class="btn btn-sm btn-primary action-btn" onclick="editFlight('CA1234')">修改</button>
+                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteFlight('CA1234')">删除</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>00CA4567</td>
+                        <td>10002</td>
+                        <td>北京首都机场</td>
+                        <td>上海浦东机场</td>
+                        <td>09:00</td>
+                        <td>11:00</td>
+                        <td>25</td>
+                        <td>85</td>
+                        <td>1500</td>
+                        <td>2800</td>
+                        <td>0.9</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary action-btn" onclick="editFlight('MU5678')">修改</button>
+                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteFlight('MU5678')">删除</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 用户管理面板 -->
+        <div class="admin-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">用户管理</h2>
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="搜索用户名/姓名...">
+                    <button class="btn btn-primary" onclick="searchUsers()">查询</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                    <tr>
+                        <th>用户ID</th>
+                        <th>用户名</th>
+                        <th>姓名</th>
+                        <th>证件号</th>
+                        <th>手机号</th>
+                        <th>邮箱</th>
+                        <th>注册时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                    <!-- 用户数据将通过JavaScript动态加载 -->
+                    <tr>
+                        <td>10001</td>
+                        <td>user1</td>
+                        <td>张三</td>
+                        <td>110********1234</td>
+                        <td>138****5678</td>
+                        <td>user1@example.com</td>
+                        <td>2023-01-15</td>
+                        <td>正常</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary action-btn" onclick="editUser('10001')">修改</button>
+                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('10001')">删除</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>10002</td>
+                        <td>user2</td>
+                        <td>李四</td>
+                        <td>310********5678</td>
+                        <td>139****1234</td>
+                        <td>user2@example.com</td>
+                        <td>2023-02-20</td>
+                        <td>正常</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary action-btn" onclick="editUser('10002')">修改</button>
+                            <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('10002')">删除</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-	<!-- footer section start -->
-	<div class="layout_padding footer_section">
-		<div class="container">
-		  <div class="row">
-			<div class="col-sm-6 col-md-6 col-lg-3">
-			  <div class="footer_logo"><img src="images/footer-logo.png"></div>
-			  <!-- 下标注释，即网页下部的内容注释 -->
-			  <p class="dolor_text">华航航空航班票务系统</p>
-			</div>
-			<div class="col-sm-6 col-md-6 col-lg-3">
-			  <h1 class="quick_text">联系我们</h1>
-			  <div class="map_flag"><img src="images/map-flag.png"><span class="padding-left">123 Main Street, Anytown USA</span></div>
-			  <div class="map_flag"><img src="images/email-icon.png"><span class="padding-left">abcd@gmail.com</span></div>
-			  <div class="map_flag"><img src="images/phone-icon.png"><span class="padding-left">+123 456 7890</span></div>
-			</div>
-		  </div>
-		</div>
-	  </div>
-	<!-- footer section end -->
-	<!-- copyright section end -->
-    <!-- Javascript files-->
-    <script src="js/jquery.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/jquery-3.0.0.min.js"></script>
-    <script src="js/plugin.js"></script>
-    <!-- sidebar -->
-    <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
-    <script src="js/custom.js"></script>
-    <!-- javascript --> 
-    <script src="js/owl.carousel.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
-    
-    <!-- 管理员页面JavaScript -->
-    <script>
-        // 页面加载时获取数据
-        $(document).ready(function() {
-            // 这里可以调用API获取航班和用户数据
-            // loadFlightData();
-            // loadUserData();
+<!-- footer section start -->
+<div class="layout_padding footer_section">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-3">
+                <div class="footer_logo"><img src="images/footer-logo.png"></div>
+                <!-- 下标注释，即网页下部的内容注释 -->
+                <p class="dolor_text">华航航空航班票务系统</p>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-3">
+                <h1 class="quick_text">联系我们</h1>
+                <div class="map_flag"><img src="images/map-flag.png"><span class="padding-left">123 Main Street, Anytown USA</span></div>
+                <div class="map_flag"><img src="images/email-icon.png"><span class="padding-left">abcd@gmail.com</span></div>
+                <div class="map_flag"><img src="images/phone-icon.png"><span class="padding-left">+123 456 7890</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- footer section end -->
+<!-- copyright section end -->
+<!-- Javascript files-->
+<script src="js/jquery.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/jquery-3.0.0.min.js"></script>
+<script src="js/plugin.js"></script>
+<!-- sidebar -->
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/custom.js"></script>
+<!-- javascript -->
+<script src="js/owl.carousel.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+
+<!-- 管理员页面JavaScript -->
+<script>
+    // 页面加载时获取数据
+    $(document).ready(function() {
+        // 这里可以调用API获取航班和用户数据
+        // loadFlightData();
+        // loadUserData();
+    });
+
+    // 搜索航班
+    function searchFlights() {
+        const keyword = $('.admin-panel:eq(0) .search-box input').val();
+        alert('搜索航班: ' + keyword);
+        // 这里可以调用API搜索航班
+        // $.get('/api/flights/search', {keyword: keyword}, function(data) {
+        //     updateFlightTable(data);
+        // });
+    }
+
+    // 搜索用户
+    function searchUsers() {
+        const keyword = $('.admin-panel:eq(1) .search-box input').val();
+        alert('搜索用户: ' + keyword);
+        // 这里可以调用API搜索用户
+        // $.get('/api/users/search', {keyword: keyword}, function(data) {
+        //     updateUserTable(data);
+        // });
+    }
+
+    // 添加航班
+    function showAddFlightModal() {
+        // 创建一个新的可编辑行
+        const newRow = `
+                <tr class="editable-row">
+                    <td><input type="text" class="form-control flight-number" placeholder="航班号"></td>
+                    <td><input type="text" class="form-control airlinecompany-number" placeholder="航班公司ID"></td>
+                    <td><input type="text" class="form-control departure" placeholder="出发机场"></td>
+                    <td><input type="text" class="form-control destination" placeholder="目的机场"></td>
+                    <td><input type="text" class="form-control departure-time" placeholder="出发时间"></td>
+                    <td><input type="text" class="form-control arrival-time" placeholder="到达时间"></td>
+                    <td><input type="text" class="form-control economy-num" placeholder="经济舱容量"></td>
+                    <td><input type="text" class="form-control business-num" placeholder="商务舱容量"></td>
+                    <td><input type="text" class="form-control economy-price" placeholder="经济舱价格"></td>
+                    <td><input type="text" class="form-control business-price" placeholder="商务舱价格"></td>
+                    <td><input type="text" class="form-control discount" placeholder="VIP折扣"></td>
+                    <td>
+                        <button class="btn btn-sm btn-success action-btn" onclick="saveNewFlight()">保存</button>
+                        <button class="btn btn-sm btn-danger action-btn" onclick="cancelNewFlight()">取消</button>
+                    </td>
+                </tr>
+            `;
+
+        // 将新行插入到表格的第一行
+        $('#flightTableBody').prepend(newRow);
+
+        // 切换到编辑模式
+        $('.editable-row input').each(function() {
+            $(this).click();
         });
-        
-        // 搜索航班
-        function searchFlights() {
-            const keyword = $('.admin-panel:eq(0) .search-box input').val();
-            alert('搜索航班: ' + keyword);
-            // 这里可以调用API搜索航班
-            // $.get('/api/flights/search', {keyword: keyword}, function(data) {
-            //     updateFlightTable(data);
-            // });
-        }
-        
-        // 搜索用户
-        function searchUsers() {
-            const keyword = $('.admin-panel:eq(1) .search-box input').val();
-            alert('搜索用户: ' + keyword);
-            // 这里可以调用API搜索用户
-            // $.get('/api/users/search', {keyword: keyword}, function(data) {
-            //     updateUserTable(data);
-            // });
-        }
-        
-        // 添加航班
-        function showAddFlightModal() {
-            alert('显示添加航班模态框');
-            // 这里可以显示添加航班的模态框
-            // $('#addFlightModal').modal('show');
-        }
-        
-        // 编辑航班
-        function editFlight(flightId) {
-            alert('编辑航班: ' + flightId);
-            // 这里可以显示编辑航班的模态框
-            // $.get('/api/flights/' + flightId, function(data) {
-            //     populateFlightForm(data);
-            //     $('#editFlightModal').modal('show');
-            // });
-        }
-        
-        // 删除航班
-        function deleteFlight(flightId) {
-            if(confirm('确定要删除航班 ' + flightId + ' 吗？')) {
-                alert('删除航班: ' + flightId);
-                // 这里可以调用API删除航班
-                // $.post('/api/flights/delete', {id: flightId}, function() {
-                //     loadFlightData(); // 重新加载数据
-                // });
+    }
+
+    // 保存新航班信息
+    function saveNewFlight() {
+        const flightId = $('.editable-row .flight-number').val();
+        const airlinecompanyId =$('.editable-row .airlinecompany-number').val();
+        const airportFrom = $('.editable-row .departure').val();
+        const airportTo = $('.editable-row .destination').val();
+        const timeTakeoff = $('.editable-row .departure-time').val();
+        const timeArrive = $('.editable-row .arrival-time').val();
+        const seat0Capacity = $('.editable-row .economy-num').val();
+        const seat1Capacity = $('.editable-row .business-num').val();
+        const seat0Price = $('.editable-row .economy-price').val();
+        const seat1Price = $('.editable-row .business-price').val();
+        const discount = $('.editable-row .discount').val(); // 默认折扣（你可以加一个输入框）
+        //const seat0Capacity = 100; // 默认经济舱座位数（可以扩展输入）
+        //const seat1Capacity = 20;  // 默认商务舱座位数
+        //const airlinecompanyId = "MU"; // 你可以添加一个 airline 输入框让管理员选
+
+        const newFlight = {
+            flightId,
+            airlinecompanyId,
+            airportFrom,
+            airportTo,
+            timeTakeoff,
+            timeArrive,
+            seat0Capacity,
+            seat1Capacity,
+            seat0Price,
+            seat1Price,
+            discount
+        };
+
+        $.ajax({
+            url: '/api/admin/flight/add',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(newFlight),
+            success: function(response) {
+                if (response.success) {
+                    alert('航班添加成功');
+                    location.reload(); // 或者调用 loadFlightData() 更新表格
+                } else {
+                    alert('添加失败: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                alert('请求失败: ' + xhr.responseText);
             }
-        }
-        
-        // 编辑用户
-        function editUser(userId) {
-            alert('编辑用户: ' + userId);
-            // 这里可以显示编辑用户的模态框
-            // $.get('/api/users/' + userId, function(data) {
-            //     populateUserForm(data);
-            //     $('#editUserModal').modal('show');
+        });
+    }
+
+
+    // 取消新航班信息
+    function cancelNewFlight() {
+        // 移除编辑行
+        $('.editable-row').remove();
+    }
+
+    // 查看数据库
+    function showDatabase() {
+        alert('查看数据库');
+        // 这里可以调用API查看数据库
+        // $.get('/api/admin/database', function(data) {
+        //     alert(data);
+        // });
+    }
+
+    // 编辑航班
+    function editFlight(flightId) {
+        alert('编辑航班: ' + flightId);
+        // 这里可以显示编辑航班的模态框
+        // $.get('/api/flights/' + flightId, function(data) {
+        //     populateFlightForm(data);
+        //     $('#editFlightModal').modal('show');
+        // });
+    }
+
+    // 删除航班
+    function deleteFlight(flightId) {
+        if (confirm('确定要删除航班 ' + flightId + ' 吗？')) {
+            alert('删除航班: ' + flightId);
+            // 这里可以调用API删除航班
+            // $.post('/api/flights/delete', {id: flightId}, function() {
+            //     loadFlightData(); // 重新加载数据
             // });
         }
-        
-        // 删除用户
-        function deleteUser(userId) {
-            if(confirm('确定要删除用户 ' + userId + ' 吗？')) {
-                alert('删除用户: ' + userId);
-                // 这里可以调用API删除用户
-                // $.post('/api/users/delete', {id: userId}, function() {
-                //     loadUserData(); // 重新加载数据
-                // });
-            }
+    }
+
+    // 编辑用户
+    function editUser(userId) {
+        alert('编辑用户: ' + userId);
+        // 这里可以显示编辑用户的模态框
+        // $.get('/api/users/' + userId, function(data) {
+        //     populateUserForm(data);
+        //     $('#editUserModal').modal('show');
+        // });
+    }
+
+    // 删除用户
+    function deleteUser(userId) {
+        if (confirm('确定要删除用户 ' + userId + ' 吗？')) {
+            alert('删除用户: ' + userId);
+            // 这里可以调用API删除用户
+            // $.post('/api/users/delete', {id: userId}, function() {
+            //     loadUserData(); // 重新加载数据
+            // });
         }
-        
-        // 更新航班表格
-        function updateFlightTable(data) {
-            // 这里可以根据API返回的数据更新表格
-            // 示例代码:
-            /*
-            let html = '';
-            data.forEach(flight => {
-                html += `<tr>
+    }
+
+    // 更新航班表格
+    function updateFlightTable(data) {
+        // 这里可以根据API返回的数据更新表格
+        // 示例代码:
+        let html = '';
+        data.forEach(flight => {
+            html += `<tr>
                     <td>${flight.number}</td>
                     <td>${flight.departure}</td>
                     <td>${flight.destination}</td>
@@ -365,19 +424,17 @@
                         <button class="btn btn-sm btn-danger action-btn" onclick="deleteFlight('${flight.id}')">删除</button>
                     </td>
                 </tr>`;
-            });
-            $('#flightTableBody').html(html);
-            */
-        }
-        
-        // 更新用户表格
-        function updateUserTable(data) {
-            // 这里可以根据API返回的数据更新表格
-            // 示例代码:
-            /*
-            let html = '';
-            data.forEach(user => {
-                html += `<tr>
+        });
+        $('#flightTableBody').html(html);
+    }
+
+    // 更新用户表格
+    function updateUserTable(data) {
+        // 这里可以根据API返回的数据更新表格
+        // 示例代码:
+        let html = '';
+        data.forEach(user => {
+            html += `<tr>
                     <td>${user.id}</td>
                     <td>${user.username}</td>
                     <td>${user.name}</td>
@@ -391,10 +448,10 @@
                         <button class="btn btn-sm btn-danger action-btn" onclick="deleteUser('${user.id}')">删除</button>
                     </td>
                 </tr>`;
-            });
-            $('#userTableBody').html(html);
-            */
-        }
-    </script>
+        });
+        $('#userTableBody').html(html);
+    }
+</script>
+<script src = "js/checkAdmin.js"></script>
 </body>
 </html>
