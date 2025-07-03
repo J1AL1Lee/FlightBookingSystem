@@ -12,7 +12,7 @@
     <style>
         /* 页面背景样式 */
         body {
-            background-image: url('../../src/main/resources/static/images/background.jpg'); /* 替换为你的背景图片路径 */
+            background-image: url('images/banner.png'); /* 替换为你的背景图片路径 */
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -30,6 +30,14 @@
         .left-section {
             flex: 2; /* 左侧占 2 部分 */
             text-align: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* 留一些透明度 */
+            border-radius: 10px;
+        }
+
+        .center-section{
+            flex: 1;
+            text-align: justify;
         }
 
         .right-section {
@@ -74,6 +82,7 @@
         <div class="left-section">
             <h1>华航航空票务系统</h1>
         </div>
+        <div class = "center-section"></div>
         <div class="right-section">
             <!-- 登录表单 -->
             <!-- 登录表单 -->

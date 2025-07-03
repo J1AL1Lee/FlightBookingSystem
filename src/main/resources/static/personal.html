@@ -150,16 +150,19 @@
         <form>
             <div class = "info-item">
                 <label>用户名：</label>
-                <input type="text" id="user_name">
+                <span class = "text-box" id = "userName"></span>
+                <input type="text" id="user_name" placeholder="">
             </div>
 
             <div class = "info-item">
                 <label>密码：</label>
+                <span class = "text-box" id = "userPwd"></span>
                 <input type="password" id="user_password">
             </div>
 
             <div class = "info-item">
                 <label>性别：</label>
+                <span class = "text-box" id = "userGender"></span>
                 <select id="user_gender">
                     <option value="男">男</option>
                     <option value="女">女</option>
@@ -167,6 +170,7 @@
             </div>
             <div class = "info-item">
                 <label>电话：</label>
+                <span class = "text-box" id = "userPhonenum"></span>
                 <input type="text" id="user_telephone">
             </div>
 
@@ -217,10 +221,10 @@
             //加载登录用户信息
             $.get('/api/user/current', function(res) {
                 if (res && res.success !== false) {
-                    $('#user_name').val(res.userName || '');
-                    $('#user_password').val(res.userPassword || '');
-                    $('#user_gender').val(res.userGender || '');
-                    $('#user_telephone').val(res.userTelephone || '');
+                    $('#userName').val(res.userName || '');
+                    $('#userPwd').val(res.userPassword || '');
+                    $('#userGender').val(res.userGender || '');
+                    $('#userPhonenum').val(res.userTelephone || '');
                 } else {
                     alert('请先登录');
                     window.location.href = '/sign_log.html';
