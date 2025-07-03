@@ -155,39 +155,14 @@
                     <tr>
                         <th>用户ID</th>
                         <th>用户名</th>
-                        <th>姓名</th>
-                        <th>证件号</th>
+                        <th>性别</th>
                         <th>手机号</th>
-                        <th>邮箱</th>
-                        <th>注册时间</th>
-                        <th>状态</th>
-                        <th>操作</th>
+                        <th>VIP</th>
+                        <th>权限</th>
                     </tr>
                     </thead>
                     <tbody id="userTableBody">
                     <!-- 用户数据将通过JavaScript动态加载 -->
-                    <tr>
-                        <td>10001</td>
-                        <td>user1</td>
-                        <td>张三</td>
-                        <td>110********1234</td>
-                        <td>138****5678</td>
-                        <td>user1@example.com</td>
-                        <td>2023-01-15</td>
-                        <td>正常</td>
-
-                    </tr>
-                    <tr>
-                        <td>10002</td>
-                        <td>user2</td>
-                        <td>李四</td>
-                        <td>310********5678</td>
-                        <td>139****1234</td>
-                        <td>user2@example.com</td>
-                        <td>2023-02-20</td>
-                        <td>正常</td>
-
-                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -236,6 +211,7 @@
         // loadFlightData();
         // loadUserData();
         loadFlightData();
+        loadAllUsers();
     });
 
     // 搜索航班
@@ -404,6 +380,53 @@
             // });
         }
     }
+    //加载用户列表
+    function loadAllUsers() {
+        $.get('/api/admin/users/all', function(data) {
+            let html = '';
+            data.forEach(user => {
+                html += `<tr>
+                <td>${user.userId}</td>
+                <td>${user.userName}</td>
+                <td>${user.userGender}</td>
+                <td>${user.userTelephone}</td>
+                <td>${user.vipState}</td>
+                <td>
+                    ${user.userAuthority == 0 ? '管理员' : '普通用户'}<br>
+                    ${user.userAuthority == 1
+                    ? `<button class="btn btn-sm btn-primary mt-1" onclick="promoteToAdmin('${user.userId}')">设为管理员</button>`
+                    : `<span class="text-muted">已是管理员</span>`}
+                </td>
+            </tr>`;
+            });
+            $('#userTableBody').html(html);
+        });
+    }
+    //修改用户权限
+    function promoteToAdmin(userId) {
+        $.ajax({
+            url: '/api/admin/user/authority',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                userId: userId,
+                newAuthority: 0
+            }),
+            success: function(res) {
+                if (res.success) {
+                    alert('权限修改成功');
+                    loadAllUsers();
+                } else {
+                    alert('修改失败: ' + res.message);
+                }
+            },
+            error: function(xhr) {
+                alert('请求错误: ' + xhr.responseText);
+            }
+        });
+    }
+
+
 
     // 更新航班表格
     function updateFlightTable(data) {

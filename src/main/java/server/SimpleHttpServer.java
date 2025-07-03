@@ -64,10 +64,16 @@ public class SimpleHttpServer {
         server.createContext("/api/booking/orders", new BookingHandler());
         server.createContext("/api/booking/refund", new BookingHandler());
 
+        //个人信息管理
+        server.createContext("/api/user/update", new UpdateUserHandler());
+
+
         //管理员路径
         server.createContext("/api/admin/flight/add", new AddFlightHandler());
         server.createContext("/api/admin/flight/all", new GetAllFlightsHandler());
-        server.createContext("/api/user/update", new UpdateUserHandler());
+        server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
+        server.createContext("/api/admin/users/all", new GetAllUsersHandler());
+
         //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
         //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
 

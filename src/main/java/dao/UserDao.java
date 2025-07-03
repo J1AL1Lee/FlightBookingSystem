@@ -161,6 +161,19 @@ public class UserDao {
 
         return users;
     }
+    //更改用户权限
+    public boolean updateUserAuthority(String userId, int newAuthority) {
+        String sql = "UPDATE user SET user_authority = ? WHERE user_ID = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, newAuthority);
+            stmt.setString(2, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     // 查询所有用户
     public List<User> findAll() {
