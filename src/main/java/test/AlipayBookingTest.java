@@ -108,14 +108,14 @@ public class AlipayBookingTest {
         mockUserDao.save(user);
 
         Flight flight = new Flight();
-        flight.setFlightId("FL123456");
+        flight.setFlightId("00CA1234");
         flight.setAirlinecompanyId("CA");
         flight.setAirportFrom("PEK");
         flight.setAirportTo("HGH");
         flight.setTimeTakeoff(LocalTime.of(8, 0));
         flight.setTimeArrive(LocalTime.of(10, 30));
-        flight.setSeat0Price(1000);
-        flight.setSeat1Price(1800);
+        flight.setSeat0Price(100000);
+        flight.setSeat1Price(180000);
         flight.setSeat0Capacity(100);
         flight.setSeat1Capacity(20);
         flight.setDiscount(0.8f);
@@ -123,7 +123,7 @@ public class AlipayBookingTest {
 
         Flightrecord flightrecord = new Flightrecord();
         flightrecord.setFlightrecordId("FL12345620250701");
-        flightrecord.setFlightId("FL123456");
+        flightrecord.setFlightId("00CA1234");
         flightrecord.setFlightDate(LocalDate.parse("2025-07-01"));
         flightrecord.setSeat0Left(50);
         flightrecord.setSeat1Left(10);
@@ -191,7 +191,7 @@ public class AlipayBookingTest {
             updateStatus("价格计算失败");
             return;
         }
-        System.out.println("💰 订单金额: ¥" + amount);
+        System.out.println("💰 订单金额: ¥" + amount/100.0);
 
         // 3. 发起支付
         System.out.println("\n--- 步骤2：发起支付宝支付 ---");
@@ -292,7 +292,7 @@ public class AlipayBookingTest {
                 "订单号: %s\n用户ID: %s\n航班号: %s\n座位类型: %s\n订单状态: %s\n总金额: ¥%d",
                 order.getOrderId(), order.getUserId(), order.getFlightId(),
                 order.getSeatType() == 0 ? "经济舱" : "商务舱", order.getOrderState(),
-                payrecord != null ? payrecord.getPayment() : 0
+                payrecord != null ? payrecord.getPayment() /100 : 0
         );
         orderInfoArea.setText(info);
     }
