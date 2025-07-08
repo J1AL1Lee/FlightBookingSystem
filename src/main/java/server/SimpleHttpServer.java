@@ -4,34 +4,20 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 import dao.DatabaseConnection;
-import dao.UserDao;
-import model.User;
-import service.FlightSearchService;
 import utils.JsonUtil;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.io.File;
-import service.BookingService;
-
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.AlipayConfig;
-import com.alipay.api.request.AlipayTradePrecreateRequest;
 import com.alipay.api.request.AlipayTradeQueryRequest;
-import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.google.gson.Gson;
-import dao.OrderDao;
 import dao.PayrecordDao;
-import model.Order;
 import model.Payrecord;
 import handler.*;
 
@@ -43,7 +29,7 @@ public class SimpleHttpServer {
 
         DatabaseConnection.testConnection();
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0",8080), 0);
 
         // 🔐 用户认证相关路由
         server.createContext("/api/register", new RegisterHandler());
@@ -79,14 +65,11 @@ public class SimpleHttpServer {
         server.createContext("/api/admin/flight/all", new GetAllFlightsHandler());
         server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
         server.createContext("/api/admin/users/all", new GetAllUsersHandler());
-
+        server.createContext("/api/admin/flight/find", new FindFlightHandler());
         //server.createContext("/api/admin/user/authority", new ModifyUserAuthorityHandler());
         //server.createContext("/api/admin/db/query", new DatabaseQueryHandler());
 
         // 💰 支付相关路由
-        server.createContext("/api/payments/create", new PaymentCreateHandler());
-        server.createContext("/api/payments/status", new PaymentStatusHandler());
-        server.createContext("/api/payments/notify", new PaymentNotifyHandler());
 
         // 🧪 测试路由
         server.createContext("/hello", new HelloHandler());
@@ -250,111 +233,4 @@ public class SimpleHttpServer {
         sendJsonResponse(exchange, 401, response);
     }
 
-    // 支付状态查询处理器
-    static class PaymentStatusHandler implements HttpHandler {
-        private PayrecordDao payrecordDao = new PayrecordDao();
-        private AlipayClient alipayClient;
-
-        public PaymentStatusHandler() {
-            AlipayConfig config = new AlipayConfig();
-            config.setServerUrl("https://openapi-sandbox.dl.alipaydev.com/gateway.do");
-            config.setAppId("9021000149697288"); // 替换为你的沙箱 AppID
-            config.setPrivateKey("your_private_key"); // 替换为你的私钥
-            config.setAlipayPublicKey("your_alipay_public_key"); // 替换为支付宝公钥
-            config.setCharset("UTF-8");
-            config.setSignType("RSA2");
-            try {
-                this.alipayClient = new DefaultAlipayClient(config);
-            } catch (AlipayApiException e) {
-                System.err.println("❌ 支付宝客户端初始化失败: " + e.getMessage());
-                throw new RuntimeException("支付宝客户端初始化失败", e);
-            }
-        }
-
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            setCorsHeaders(exchange);
-            if ("OPTIONS".equals(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(200, -1);
-                return;
-            }
-            if (!"GET".equals(exchange.getRequestMethod())) {
-                sendJsonResponse(exchange, 405, createErrorResponse("只支持GET请求"));
-                return;
-            }
-
-            try {
-                String query = exchange.getRequestURI().getQuery();
-                String[] params = query.split("&");
-                String payId = "";
-                for (String param : params) {
-                    String[] kv = param.split("=");
-                    if (kv[0].equals("payId")) payId = kv[1];
-                }
-                if (payId.isEmpty()) {
-                    sendJsonResponse(exchange, 400, createErrorResponse("payId 不能为空"));
-                    return;
-                }
-
-                AlipayTradeQueryRequest request = new AlipayTradeQueryRequest();
-                request.setBizContent(new Gson().toJson(Map.of("out_trade_no", payId)));
-
-                AlipayTradeQueryResponse response = alipayClient.execute(request);
-                if (response.isSuccess()) {
-                    String tradeStatus = response.getTradeStatus();
-                    Payrecord payrecord = payrecordDao.findById(payId);
-                    if (payrecord != null) {
-                        payrecord.setPayState(tradeStatus.equals("TRADE_SUCCESS") ? "已支付" : "未支付");
-                        new PayrecordDao().save(payrecord); // 更新状态
-                    }
-                    sendJsonResponse(exchange, 200, Map.of("success", true, "payId", payId, "status", tradeStatus));
-                } else {
-                    sendJsonResponse(exchange, 500, createErrorResponse("查询支付状态失败: " + response.getMsg()));
-                }
-            } catch (AlipayApiException e) {
-                System.err.println("❌ 支付宝查询异常: " + e.getMessage());
-                sendJsonResponse(exchange, 500, createErrorResponse("支付宝查询失败: " + e.getMessage()));
-            }
-        }
-    }
-
-    // 支付通知处理器
-    static class PaymentNotifyHandler implements HttpHandler {
-        private PayrecordDao payrecordDao = new PayrecordDao();
-
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            setCorsHeaders(exchange);
-            if ("OPTIONS".equals(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(200, -1);
-                return;
-            }
-            if (!"POST".equals(exchange.getRequestMethod())) {
-                sendJsonResponse(exchange, 405, createErrorResponse("只支持POST请求"));
-                return;
-            }
-
-            try {
-                String requestBody = readRequestBody(exchange);
-                System.out.println("📨 收到支付宝通知: " + requestBody);
-
-                Map<String, Object> notifyData = JsonUtil.fromJsonToMap(requestBody);
-                String tradeStatus = (String) notifyData.get("trade_status");
-                String outTradeNo = (String) notifyData.get("out_trade_no");
-
-                Payrecord payrecord = payrecordDao.findById(outTradeNo);
-                if (payrecord != null) {
-                    payrecord.setPayState(tradeStatus.equals("TRADE_SUCCESS") ? "已支付" : "未支付");
-                    payrecord.setPayTime(LocalDateTime.now());
-                    new PayrecordDao().save(payrecord); // 更新状态
-                    sendJsonResponse(exchange, 200, Map.of("success", true, "message", "通知处理成功"));
-                } else {
-                    sendJsonResponse(exchange, 404, createErrorResponse("订单不存在"));
-                }
-            } catch (Exception e) {
-                System.err.println("❌ 支付通知处理失败: " + e.getMessage());
-                sendJsonResponse(exchange, 500, createErrorResponse("通知处理失败: " + e.getMessage()));
-            }
-        }
-    }
 }

@@ -702,7 +702,7 @@ async function confirmBooking() {
 
             // 延迟跳转
             setTimeout(() => {
-                window.location.href = 'personal.html';
+                window.location.href = 'order.html';
             }, 3000);
 
         } else {

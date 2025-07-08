@@ -26,6 +26,11 @@
     <link rel="stylesheet" href="css/owl.carousel.min.css">
     <link rel="stylesheet" href="../../src/main/resources/static/css/owl.theme.default.min.css">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+    <style>
+        .admin-only {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 <!-- header section start -->
@@ -41,7 +46,7 @@
                 <a class="nav-item nav-link" href="search.html">航班查询</a>
                 <a class="nav-item nav-link active" href="order.html">订单管理</a>
                 <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
-                <a class="nav-item nav-link" href="admin.html">管理员操作</a>
+                <a class="nav-item nav-link admin-only" href="admin.html">管理员操作</a>
             </div>
         </nav>
     </div>
@@ -243,5 +248,8 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
 <!-- booking specific js -->
 <script src="js/order.js"></script>
+<script>
+    $(document).ready()
+</script>
 </body>
 </html>
