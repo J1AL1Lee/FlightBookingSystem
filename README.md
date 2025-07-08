@@ -20,6 +20,10 @@ FlightBookingSystem/
             │   ├── 📄 PayrecordDao.java          # 支付记录数据访问
             │   └── 📄 UserDao.java               # 用户数据访问
             │
+            ├── 📁 dto/                      # 🗄️ 
+            │   ├── 📄 OrderDetailDTO.java    # 
+            │   ├── 📄 OrderStatsDTO.java # 
+            │
             ├── 📁 model/                    # 📊 数据实体层
             │   ├── 📄 Airlinecompany.java        # 航空公司实体
             │   ├── 📄 Airport.java               # 机场实体
@@ -39,13 +43,13 @@ FlightBookingSystem/
             │   ├── 📄 AlipayService.java         # 支付宝支付服务
             │   ├── 📄 BookingService.java        # 航班预订服务
             │   └── 📄 FlightSearchService.java   # 航班搜索服务
+            │   └── 📄 OrderService.java          # 订单管理服务
             │
             ├── 📁 test/                     # 🧪 测试类
             │   └── 📄 AlipayTest.java            # 支付宝测试
             │
             └── 📁 utils/                    # 🛠️ 工具类库
                 ├── 📄 JsonUtil.java              # JSON处理工具
-                └── 📄 Main.java                  # 主启动类
         │
         └── 📁 resources/                    # 📦 资源文件目录
             ├── 📁 sql/                      # 🗄️ 数据库脚本
@@ -59,8 +63,8 @@ FlightBookingSystem/
                 ├── 📁 可复用html代码/             # HTML模板代码
                 │
                 ├── 📄 admin.html                # 管理员页面
-                ├── 📄 booking.html              # 航班预订页面
-                ├── 📄 booking_demo.html         # 预订演示页面
+                ├── 📄 order.html                # 订单管理页面
+                ├── 📄 booking_demo.html         # 航班预订页面
                 ├── 📄 main.html                 # 系统主页
                 ├── 📄 payment.html              # 支付页面
                 ├── 📄 personal.html             # 个人中心页面
