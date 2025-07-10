@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>订单管理 - 航空票务系统</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <!-- style css -->
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <!-- booking specific css -->
+    <link rel="stylesheet" type="text/css" href="css/order.css">
+    <!-- Responsive-->
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- fevicon -->
+    <link rel="icon" href="../../src/main/resources/static/images/fevicon.png" type="image/gif" />
+    <!-- Scrollbar Custom CSS -->
+    <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- owl stylesheets -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="../../src/main/resources/static/css/owl.theme.default.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+    <style>
+        .admin-only {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<!-- header section start -->
+<div class="header_section">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="logo"><a href="main.html"><img src="images/logo.png"></a></div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <a class="nav-item nav-link" href="main.html">主页</a>
+                <a class="nav-item nav-link" href="search.html">航班查询</a>
+                <a class="nav-item nav-link active" href="order.html">订单管理</a>
+                <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
+                <a class="nav-item nav-link admin-only" href="admin.html">管理员操作</a>
+            </div>
+        </nav>
+    </div>
+</div>
+<!-- header section end -->
+
+<!-- 订单管理主要内容 -->
+<div class="booking-container">
+    <div class="container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-clipboard-list"></i>
+                订单管理
+            </h1>
+            <p class="page-subtitle">管理您的所有航班订单</p>
+        </div>
+
+        <!-- 订单统计卡片 -->
+        <div class="row stats-cards">
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3 id="pendingCount">0</h3>
+                        <p>待支付订单</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-plane-departure"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3 id="upcomingCount">0</h3>
+                        <p>未出行订单</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3 id="completedCount">0</h3>
+                        <p>已完成订单</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="stats-content">
+                        <h3 id="totalCount">0</h3>
+                        <p>总订单数</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单筛选标签 -->
+        <div class="order-tabs">
+            <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">
+                        <i class="fas fa-list"></i> 全部订单
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="false">
+                        <i class="fas fa-clock"></i> 待支付
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="false">
+                        <i class="fas fa-plane-departure"></i> 未出行
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                        <i class="fas fa-check-circle"></i> 历史订单
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 订单内容区域 -->
+        <div class="tab-content" id="orderTabsContent">
+            <!-- 全部订单 -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                <div class="orders-container" id="allOrders">
+                    <!-- 订单列表将通过JavaScript动态加载 -->
+                </div>
+            </div>
+
+            <!-- 待支付订单 -->
+            <div class="tab-pane fade" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                <div class="orders-container" id="pendingOrders">
+                    <!-- 待支付订单列表 -->
+                </div>
+            </div>
+
+            <!-- 未出行订单 -->
+            <div class="tab-pane fade" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                <div class="orders-container" id="upcomingOrders">
+                    <!-- 未出行订单列表 -->
+                </div>
+            </div>
+
+            <!-- 历史订单 -->
+            <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                <div class="orders-container" id="completedOrders">
+                    <!-- 历史订单列表 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+            <p class="loading-text">正在加载订单数据...</p>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3>暂无订单</h3>
+            <p>您还没有任何订单，快去预订您的第一趟航班吧！</p>
+            <a href="search.html" class="btn btn-primary">
+                <i class="fas fa-search"></i> 搜索航班
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 订单详情模态框 -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailModalLabel">
+                    <i class="fas fa-info-circle"></i> 订单详情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- 订单详情内容将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- footer section start -->
+<div class="layout_padding footer_section">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-3">
+                <div class="footer_logo"><img src="images/footer-logo.png"></div>
+                <p class="dolor_text">华航航空航班票务系统 <br>Copyright © 2025 All rights reserved.</p>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-3">
+                <h1 class="quick_text">更多功能</h1>
+                <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">加入我们</span></div>
+                <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">维护者</span></div>
+                <div class="chevron_arrow"><img src="images/chevron-arrow.png"><span class="padding-left">版本状态</span></div>
+            </div>
+            <div class="col-sm-6 col-md-6 col-lg-3">
+                <h1 class="quick_text">联系我们</h1>
+                <div class="map_flag"><img src="images/map-flag.png"><span class="padding-left">123 Main Street, Anytown USA</span></div>
+                <div class="map_flag"><img src="images/email-icon.png"><span class="padding-left">abcd@gmail.com</span></div>
+                <div class="map_flag"><img src="images/phone-icon.png"><span class="padding-left">+123 456 7890</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- footer section end -->
+
+<!-- Javascript files-->
+<script src="js/jquery.min.js"></script>
+<script src="js/popper.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
+<script src="js/jquery-3.0.0.min.js"></script>
+<script src="js/plugin.js"></script>
+<!-- sidebar -->
+<script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script src="js/custom.js"></script>
+<!-- javascript -->
+<script src="../../src/main/resources/static/js/owl.carousel.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.js"></script>
+<!-- booking specific js -->
+<script src="js/order.js"></script>
+<script>
+    $(document).ready()
+</script>
+</body>
+</html>

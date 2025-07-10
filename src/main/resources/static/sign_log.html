@@ -12,7 +12,7 @@
     <style>
         /* 页面背景样式 */
         body {
-            background-image: url('../../src/main/resources/static/images/background.jpg'); /* 替换为你的背景图片路径 */
+            background-image: url('images/banner.png'); /* 替换为你的背景图片路径 */
             background-size: cover;
             background-repeat: no-repeat;
             background-attachment: fixed;
@@ -30,6 +30,14 @@
         .left-section {
             flex: 2; /* 左侧占 2 部分 */
             text-align: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* 留一些透明度 */
+            border-radius: 10px;
+        }
+
+        .center-section{
+            flex: 1;
+            text-align: justify;
         }
 
         .right-section {
@@ -74,6 +82,7 @@
         <div class="left-section">
             <h1>华航航空票务系统</h1>
         </div>
+        <div class = "center-section"></div>
         <div class="right-section">
             <!-- 登录表单 -->
             <!-- 登录表单 -->
@@ -158,7 +167,58 @@
                 $('#login-form').show();
             });
 
-            // 实际登录功能
+            // 封装API请求工具类
+            const ApiClient = {
+                request: function(url, options = {}) {
+                    const defaultOptions = {
+                        type: 'GET',
+                        contentType: 'application/json; charset=utf-8',
+                        timeout: 10000,
+                        xhrFields: {
+                            withCredentials: true // 重要：包含Cookie用于session认证
+                        }
+                    };
+
+                    const finalOptions = Object.assign({}, defaultOptions, options);
+
+                    return new Promise((resolve, reject) => {
+                        $.ajax(finalOptions.url || url, {
+                            ...finalOptions,
+                            success: function(data, textStatus, xhr) {
+                                // 检查是否因为session过期需要重新登录
+                                if (data && data.success === false && data.message === '未登录') {
+                                    window.location.href = 'main.html';
+                                    return;
+                                }
+                                resolve(data);
+                            },
+                            error: function(xhr, textStatus, errorThrown) {
+                                // 401表示未认证，跳转到登录页
+                                if (xhr.status === 401) {
+                                    alert('登录已过期，请重新登录');
+                                    window.location.href = 'main.html';
+                                    return;
+                                }
+
+                                let errorMsg = '请求失败';
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    errorMsg = response.message || errorMsg;
+                                } catch (e) {
+                                    if (xhr.status === 0) {
+                                        errorMsg = '网络连接失败，请检查网络';
+                                    } else {
+                                        errorMsg = `服务器错误 (${xhr.status})`;
+                                    }
+                                }
+                                reject(new Error(errorMsg));
+                            }
+                        });
+                    });
+                }
+            };
+
+            // 修改后的安全登录功能
             $('#btn-login').click(function () {
                 const userId = $('#username').val().trim();
                 const userPassword = $('#password').val().trim();
@@ -168,45 +228,52 @@
                     alert('请输入用户ID');
                     return;
                 }
+                if (!/^[0-9]{6}$/.test(userId)) {
+                    alert('用户ID必须是6位数字');
+                    return;
+                }
                 if (!userPassword) {
                     alert('请输入密码');
                     return;
                 }
 
+                // 禁用登录按钮，防止重复提交
+                const $loginBtn = $('#btn-login');
+                $loginBtn.prop('disabled', true).text('登录中...');
+
                 // 发送登录请求
-                $.ajax({
-                    url: 'http://localhost:8080/api/login',
+                ApiClient.request('/api/login', {
                     type: 'POST',
-                    contentType: 'application/json; charset=utf-8',
                     data: JSON.stringify({
                         userId: userId,
                         userPassword: userPassword
-                    }),
-                    success: function(response) {
-                        if (response.success) {
-                            alert('登录成功！欢迎 ' + response.userName);
-                            // 可以将用户信息存储到sessionStorage
-                            sessionStorage.setItem('currentUser', JSON.stringify(response));
-                            // 跳转到主页
-                            window.location.href = 'main.html';
-                        } else {
-                            alert('登录失败：' + response.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMsg = '登录失败';
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            errorMsg = response.message || errorMsg;
-                        } catch (e) {
-                            errorMsg = '网络错误或服务器无响应';
-                        }
-                        alert(errorMsg);
+                    })
+                }).then(function(response) {
+                    if (response && response.success) {
+                        alert('登录成功！欢迎 ' + response.userName);
+
+                        // 只存储非敏感的基本信息到localStorage
+                        // 不再存储权限、VIP状态等敏感信息
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('userName', response.userName);
+
+                        // 清除sessionStorage中的旧数据（如果有的话）
+                        sessionStorage.removeItem('currentUser');
+
+                        // 跳转到主页
+                        window.location.href = 'main.html';
+                    } else {
+                        alert('登录失败：' + (response ? response.message : '未知错误'));
                     }
+                }).catch(function(error) {
+                    alert('登录失败：' + error.message);
+                }).finally(function() {
+                    // 恢复登录按钮状态
+                    $loginBtn.prop('disabled', false).text('登录');
                 });
             });
 
-            // 实际注册功能
+            // 修改后的注册功能
             $('#btn-register').click(function () {
                 const userId = $('#register-username').val().trim();
                 const userPassword = $('#register-password').val().trim();
@@ -235,43 +302,76 @@
                     return;
                 }
 
+                // 禁用注册按钮，防止重复提交
+                const $registerBtn = $('#btn-register');
+                $registerBtn.prop('disabled', true).text('注册中...');
+
                 // 发送注册请求
-                $.ajax({
-                    url: 'http://localhost:8080/api/register',
+                ApiClient.request('/api/register', {
                     type: 'POST',
-                    contentType: 'application/json; charset=utf-8',
                     data: JSON.stringify({
                         userId: userId,
-                        userName: userId, // 暂时用userId作为userName，你也可以添加真实姓名输入框
+                        userName: userId, // 暂时用userId作为userName
                         userPassword: userPassword,
                         userGender: userGender === 'male' ? '男' : '女',
                         userTelephone: userTelephone
-                    }),
-                    success: function(response) {
-                        if (response.success) {
-                            alert('注册成功！用户ID：' + response.userId);
-                            // 自动切换回登录界面
-                            $('#register-form').hide();
-                            $('#login-form').show();
-                            // 清空注册表单
-                            $('#register-username').val('');
-                            $('#register-password').val('');
-                            $('#register-phone').val('');
-                        } else {
-                            alert('注册失败：' + response.message);
-                        }
-                    },
-                    error: function(xhr) {
-                        let errorMsg = '注册失败';
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            errorMsg = response.message || errorMsg;
-                        } catch (e) {
-                            errorMsg = '网络错误或服务器无响应';
-                        }
-                        alert(errorMsg);
+                    })
+                }).then(function(response) {
+                    if (response && response.success) {
+                        alert('注册成功！用户ID：' + response.userId);
+                        // 自动切换回登录界面
+                        $('#register-form').hide();
+                        $('#login-form').show();
+                        // 清空注册表单
+                        $('#register')[0].reset();
+                    } else {
+                        alert('注册失败：' + (response ? response.message : '未知错误'));
                     }
+                }).catch(function(error) {
+                    alert('注册失败：' + error.message);
+                }).finally(function() {
+                    // 恢复注册按钮状态
+                    $registerBtn.prop('disabled', false).text('注册');
                 });
+            });
+
+            // 页面加载时清理可能残留的敏感信息
+            // 移除旧版本可能存储的敏感数据
+            localStorage.removeItem('userInfo');
+            sessionStorage.removeItem('currentUser');
+
+            // 如果已经登录，检查session是否有效
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                // 验证当前session是否还有效
+                ApiClient.request('/api/user/current').then(function(response) {
+                    if (response && response.success) {
+                        // session有效，直接跳转到主页
+                        window.location.href = 'main.html';
+                    } else {
+                        // session无效，清除本地登录状态
+                        localStorage.removeItem('isLoggedIn');
+                        localStorage.removeItem('userName');
+                    }
+                }).catch(function(error) {
+                    // 请求失败，清除本地登录状态
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('userName');
+                    console.log('检查登录状态失败:', error.message);
+                });
+            }
+
+            // 添加回车键登录支持
+            $('#username, #password').keypress(function(e) {
+                if (e.which === 13) { // 回车键
+                    $('#btn-login').click();
+                }
+            });
+
+            // 添加回车键注册支持
+            $('#register-username, #register-password, #register-phone').keypress(function(e) {
+                if (e.which === 13) { // 回车键
+                    $('#btn-register').click();
+                }
             });
         });
     </script>

@@ -79,14 +79,14 @@
 <div class="header_section">
     <div class="container">
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <div class="logo"><a href="index.html"><img src="images/logo.png"></a></div>
+            <div class="logo"><a href="main.html"><img src="images/logo.png"></a></div>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <a class="nav-item nav-link" href="main.html">主页</a>
                 <a class="nav-item nav-link" href="search.html">航班查询</a>
-                <a class="nav-item nav-link" href="booking.html">订单管理</a>
+                <a class="nav-item nav-link" href="order.html">订单管理</a>
                 <a class="nav-item nav-link" href="personal.html">个人信息管理</a>
                 <a class="nav-item nav-link" href="admin.html">管理员操作</a>
             </div>
@@ -418,7 +418,7 @@
         if (confirm(`确定要预订航班 ${flightId} 吗？`)) {
             // 这里可以跳转到预订页面
             console.log(`预订航班: ${flightId}, 记录ID: ${flightrecordId}`);
-            // window.location.href = `booking.html?flightrecordId=${flightrecordId}&flightId=${flightId}`;
+            // window.location.href = `order.html?flightrecordId=${flightrecordId}&flightId=${flightId}`;
             alert('预订功能开发中...');
         }
     }
